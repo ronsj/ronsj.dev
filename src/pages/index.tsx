@@ -22,7 +22,7 @@ const Home: NextPage = () => {
         </ul>
       </nav>
       <main className="container md:mx-auto">
-        <h1 className="text-6xl font-bold underline">Hey 👋 I'm Ron! </h1>
+        <h1 className="text-6xl font-bold underline">Hey 👋 I&apos;m Ron! </h1>
         <h2 className="text-3xl">
           Lorem ipsum dolor sit amet consectetur adipisicing elit. Nesciunt
           dolor sint vitae, ab eaque est suscipit iure nobis! Nobis repudiandae
