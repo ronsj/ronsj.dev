@@ -1,0 +1,46 @@
+:root {
+  /* Colors */
+  --yellow: #ffcb6b;
+  --green: #c3e872;
+  --blue: #82aaff;
+  --purple: #c792ea;
+  --red: #d25252;
+  --orange: #f78c6c;
+  --white: #ffffff;
+  --palenight-dark: #202331;
+  --palenight-medium: #717cb470;
+  --palenight-light: #cfd8f6;
+
+  /* Typography */
+  --font-size: 20px;
+}
+
+::selection {
+  background-color: var(--palenight-medium);
+  color: var(--white);
+}
+
+html {
+  font-size: var(--font-size);
+}
+
+body {
+  background-color: var(--palenight-dark);
+  color: var(--palenight-light);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+h1,
+h2 {
+  font-weight: 700;
+  color: var(--yellow);
+}
+
+h1 {
+  font-size: 2rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+}
