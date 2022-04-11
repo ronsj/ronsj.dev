@@ -1,12 +1,5 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import Link from 'next/link'
-
-export function getStaticProps() {
-  return {
-    props: {},
-  }
-}
 
 const Home: NextPage = () => {
   return (
@@ -21,7 +14,7 @@ const Home: NextPage = () => {
       </Head>
       <main className="container">
         <h1>Hi 👋 I&apos;m Ron.</h1>
-        <p>
+        <p className="intro">
           I&apos;m a software engineer with 6+ years of experience building for
           the web. I enjoy crafting great user experiences with techologies like
           JavaScript, TypeScript, Node.js, and React.
