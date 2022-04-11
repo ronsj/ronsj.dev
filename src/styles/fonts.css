@@ -3,7 +3,7 @@
   src: url('/fonts/Inter-Regular.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
-  font-display: swap;
+  font-display: optional;
 }
 
 @font-face {
@@ -11,6 +11,6 @@
   src: url('/fonts/Inter-Bold.woff2') format('woff2');
   font-weight: bold;
   font-style: normal;
-  font-display: swap;
+  font-display: optional;
 }
 
