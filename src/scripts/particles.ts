@@ -7,8 +7,10 @@ export interface ParticleOptions {
   reducedMotion?: boolean;
 }
 
-/** Index of the chat-bubble shape, which faces the viewer instead of spinning. */
-const FACING_SHAPE = 6;
+/** Index of the solar-system shape, which is shown tilted on its axis. */
+const ORBITS_SHAPE = 3;
+/** Roll applied to the solar system after it spins, so it turns about its own tilted axis (radians). */
+const ORBITS_ROLL = -0.42;
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
 /**
@@ -112,14 +114,14 @@ export class ParticleField {
     const ay = time * 0.25 * this.spin + p * 0.9;
     const ax = 0.35 + Math.sin(time * 0.3) * 0.08;
 
-    // Facing shape: gentle sway only, nearly no pitch.
-    const facing = (i1 === FACING_SHAPE && t > 0.5) || i0 === FACING_SHAPE;
-    const yaw = facing ? Math.sin(time * 0.5) * 0.15 : ay;
-    const pitch = facing ? 0.05 : ax;
-    const c1 = Math.cos(yaw);
-    const s1 = Math.sin(yaw);
-    const c2 = Math.cos(pitch);
-    const s2 = Math.sin(pitch);
+    const c1 = Math.cos(ay);
+    const s1 = Math.sin(ay);
+    const c2 = Math.cos(ax);
+    const s2 = Math.sin(ax);
+    // Ease the tilt in and out as the solar system morphs from and into its neighbours.
+    const rollW = i0 === ORBITS_SHAPE ? 1 - t : i1 === ORBITS_SHAPE ? t : 0;
+    const c3 = Math.cos(ORBITS_ROLL * rollW);
+    const s3 = Math.sin(ORBITS_ROLL * rollW);
 
     // Wide screens: centre the shape in the space right of the text column.
     // Narrow: push it to the top-right corner (partly off-screen is fine) and fade it so text stays readable.
@@ -128,11 +130,16 @@ export class ParticleField {
     const cxs = wide ? (textEdge + W) / 2 : W * 0.8;
     const cys = wide ? H * 0.5 : H * 0.28;
     const fade = wide ? 1 : 0.5;
-    const cloudR = i0 === 0 ? 2.1 - t : 1.1;
+    // The cloud (first and last stage) is bigger than the other shapes, so zoom out in proportion to how
+    // much of it is on screen. This stays continuous whichever direction we morph, including nav jumps.
+    const isCloud = (i: number) => i === 0 || i === last;
+    const cloudW = (isCloud(i0) ? 1 - t : 0) + (isCloud(i1) ? t : 0);
+    const cloudR = 1.1 + cloudW;
     const half = wide ? (W - textEdge) / 2 - 24 : W * 0.46;
     const fit = Math.max(1.3, cloudR);
     const scale = Math.min(half / fit, (H * 0.36) / fit) * 1.38;
-    const drift = this.reduced ? 0 : i0 === 0 && t < 0.01 ? 0.05 : 0.012;
+    // The resting cloud drifts more than the solid shapes; blend rather than switch.
+    const drift = this.reduced ? 0 : 0.012 + 0.038 * cloudW;
 
     for (let i = 0; i < n; i++) {
       const k = i * 3;
@@ -153,9 +160,11 @@ export class ParticleField {
       const z1 = -x * s1 + z * c1;
       const y1 = y * c2 - z1 * s2;
       const z2 = y * s2 + z1 * c2;
+      const x2 = x1 * c3 - y1 * s3;
+      const y2 = x1 * s3 + y1 * c3;
       const f = 3.2 / (3.2 + z2);
-      px[i] = cxs + x1 * f * scale;
-      py[i] = cys - y1 * f * scale;
+      px[i] = cxs + x2 * f * scale;
+      py[i] = cys - y2 * f * scale;
       pz[i] = z2;
       pf[i] = f;
       order[i] = i;

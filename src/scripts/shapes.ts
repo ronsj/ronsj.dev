@@ -56,20 +56,66 @@ function layers(n: number): Shape {
   });
 }
 
-function cube(n: number): Shape {
-  const s = 0.8;
+/** Uniform point inside a ball of radius r centred on c. */
+function ball(c: Vec3, r: number): Vec3 {
+  const v: Vec3 = [rnd(), rnd(), rnd()];
+  const s = (Math.cbrt(Math.random()) * r) / (Math.hypot(...v) || 1);
+  return [c[0] + v[0] * s, c[1] + v[1] * s, c[2] + v[2] * s];
+}
+
+interface Ring {
+  r: number;
+  tiltX: number;
+  tiltZ: number;
+  planetAngle: number;
+  planetR: number;
+}
+
+/** A point on a ring in the x–z plane, tilted about x then z. */
+function onRing(ring: Ring, angle: number, radius: number): Vec3 {
+  const x = Math.cos(angle) * radius;
+  const z = Math.sin(angle) * radius;
+  const y1 = -z * Math.sin(ring.tiltX);
+  const z1 = z * Math.cos(ring.tiltX);
+  return [
+    x * Math.cos(ring.tiltZ) - y1 * Math.sin(ring.tiltZ),
+    x * Math.sin(ring.tiltZ) + y1 * Math.cos(ring.tiltZ),
+    z1,
+  ];
+}
+
+/** Solar system: a sun at the centre, thin orbit rings around it, and a small planet on each ring. */
+function orbits(n: number): Shape {
+  const SUN_R = 0.22;
+  const ORBITS = [0.45, 0.65, 0.85, 1.05, 1.25];
+  // Each orbit is tilted slightly out of the shared plane, and its planet sits at a random angle on it.
+  const rings: Ring[] = ORBITS.map((r) => ({
+    r,
+    tiltX: rnd() * 0.14,
+    tiltZ: rnd() * 0.14,
+    planetAngle: Math.random() * TAU,
+    planetR: 0.05 + Math.random() * 0.05,
+  }));
+  const total = ORBITS.reduce((s, r) => s + r, 0);
   return make(n, () => {
-    const u = rnd() * 0.8;
-    const v = rnd() * 0.8;
-    const faces: Vec3[] = [
-      [s, u, v],
-      [-s, u, v],
-      [u, s, v],
-      [u, -s, v],
-      [u, v, s],
-      [u, v, -s],
-    ];
-    return faces[Math.floor(Math.random() * 6)]!;
+    const u = Math.random();
+    if (u < 0.12) return ball([0, 0, 0], SUN_R);
+    if (u < 0.34) {
+      const ring = rings[Math.floor(Math.random() * rings.length)]!;
+      return ball(onRing(ring, ring.planetAngle, ring.r), ring.planetR);
+    }
+    // Orbit rings, weighted by circumference so the particle density is even along each.
+    let pick = Math.random() * total;
+    let ring = rings[rings.length - 1]!;
+    for (const candidate of rings) {
+      if (pick < candidate.r) {
+        ring = candidate;
+        break;
+      }
+      pick -= candidate.r;
+    }
+    const p = onRing(ring, Math.random() * TAU, ring.r + rnd() * 0.012);
+    return [p[0], p[1] + rnd() * 0.012, p[2]];
   });
 }
 
@@ -107,43 +153,6 @@ function wave(n: number): Shape {
   });
 }
 
-/** Chat bubble: wide ellipse + tail at bottom-left, three dots punched out. Sampled from a 2D canvas. */
-function chatBubble(n: number): Shape {
-  const W = 360;
-  const H = 320;
-  const c = document.createElement("canvas");
-  c.width = W;
-  c.height = H;
-  const x = c.getContext("2d", { willReadFrequently: true });
-  const pts: [number, number][] = [];
-  if (x) {
-    x.fillStyle = "#000";
-    x.beginPath();
-    x.ellipse(180, 140, 160, 120, 0, 0, TAU);
-    x.fill();
-    x.beginPath();
-    x.moveTo(60, 200);
-    x.quadraticCurveTo(66, 262, 30, 300);
-    x.quadraticCurveTo(100, 292, 132, 250);
-    x.closePath();
-    x.fill();
-    x.globalCompositeOperation = "destination-out";
-    for (const dx of [-72, 0, 72]) {
-      x.beginPath();
-      x.arc(180 + dx, 140, 22, 0, TAU);
-      x.fill();
-    }
-    const d = x.getImageData(0, 0, W, H).data;
-    for (let py = 0; py < H; py += 2)
-      for (let px = 0; px < W; px += 2)
-        if (d[(py * W + px) * 4 + 3]! > 128) pts.push([(px - 180) / 140, -(py - 160) / 140]);
-  }
-  return make(n, () => {
-    const p = pts.length ? pts[Math.floor(Math.random() * pts.length)]! : [0, 0];
-    return [p[0] + rnd() * 0.01, p[1] + rnd() * 0.01, rnd() * 0.12];
-  });
-}
-
 /** Random shell the particles fly in from on first load. */
 function scatter(n: number): Shape {
   return make(n, () => {
@@ -162,8 +171,10 @@ export interface ShapeSet {
 }
 
 export function buildShapes(n: number): ShapeSet {
+  // The story opens and closes on the same cloud.
+  const hero = cloud(n);
   return {
-    shapes: [cloud(n), sphere(n), layers(n), cube(n), helix(n), wave(n), chatBubble(n)],
+    shapes: [hero, sphere(n), layers(n), orbits(n), helix(n), wave(n), hero],
     scatter: scatter(n),
     seeds: make(n, () => [Math.random(), Math.random(), Math.random()]),
   };
