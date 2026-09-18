@@ -77,7 +77,7 @@ export const stages: Stage[] = [
 ];
 
 export const contactLinks = [
-  { label: "hello@ronsanjose.dev", href: "mailto:hello@ronsanjose.dev", external: false },
   { label: "GitHub", href: "https://github.com", external: true },
   { label: "LinkedIn", href: "https://linkedin.com", external: true },
+  { label: "hello@ronsanjose.dev", href: "mailto:hello@ronsanjose.dev", external: false },
 ];

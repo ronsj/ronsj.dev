@@ -67,6 +67,11 @@ test("Contact nav link shows contact links", async ({ page }) => {
   const github = page.getByRole("link", { name: /GitHub/ });
   await expect(github).toBeVisible();
   await expect(github).toHaveAttribute("rel", "noopener noreferrer");
+  await expect(activeStage(page).getByRole("listitem").getByRole("link")).toHaveText([
+    /GitHub/,
+    /LinkedIn/,
+    "hello@ronsanjose.dev",
+  ]);
 });
 
 test("deep link opens on the matching stage", async ({ page }) => {
