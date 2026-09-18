@@ -129,7 +129,8 @@ export class ParticleField {
     const textEdge = Math.min(W, 600) + 24;
     const cxs = wide ? (textEdge + W) / 2 : W * 0.8;
     const cys = wide ? H * 0.5 : H * 0.28;
-    const fade = wide ? 1 : 0.5;
+    // Particle opacity by device class: phones, tablets (≥768px), desktops (≥1024px).
+    const fade = W >= 1024 ? 0.8 : W >= 768 ? 0.4 : 0.2;
     // The cloud (first and last stage) is bigger than the other shapes, so zoom out in proportion to how
     // much of it is on screen. This stays continuous whichever direction we morph, including nav jumps.
     const isCloud = (i: number) => i === 0 || i === last;
