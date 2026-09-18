@@ -34,7 +34,7 @@ test("scrolling steps through every stage", async ({ page }) => {
     "Selected work.",
     "Developer DNA.",
     "In the open.",
-    "Let’s talk.",
+    "Let’s connect.",
   ];
   for (const [i, title] of titles.entries()) {
     await scrollToStage(page, i);
@@ -59,7 +59,7 @@ test("Contact nav link shows contact links", async ({ page }) => {
     .getByRole("link", { name: "Contact" })
     .click();
   await expect(page).toHaveURL(/#contact$/);
-  await expect(page.getByRole("heading", { name: "Let’s talk." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Let’s connect." })).toBeVisible();
   await expect(page.getByRole("link", { name: "hello@ronsanjose.dev" })).toHaveAttribute(
     "href",
     "mailto:hello@ronsanjose.dev",
@@ -71,12 +71,12 @@ test("Contact nav link shows contact links", async ({ page }) => {
 
 test("deep link opens on the matching stage", async ({ page }) => {
   await page.goto("/#contact");
-  await expect(page.getByRole("heading", { name: "Let’s talk." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Let’s connect." })).toBeVisible();
 });
 
 test("keyboard focus brings an off-screen stage into view", async ({ page }) => {
   await page.getByRole("link", { name: "hello@ronsanjose.dev" }).focus();
-  await expect(page.getByRole("heading", { name: "Let’s talk." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Let’s connect." })).toBeVisible();
   await expect(page.getByRole("link", { name: "hello@ronsanjose.dev" })).toBeInViewport();
 });
 

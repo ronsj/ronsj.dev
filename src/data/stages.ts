@@ -71,7 +71,7 @@ export const stages: Stage[] = [
   {
     id: "contact",
     kicker: "Contact",
-    title: "Let’s talk.",
+    title: "Let’s connect.",
     body: "Open to senior frontend roles and select freelance projects.",
   },
 ];
