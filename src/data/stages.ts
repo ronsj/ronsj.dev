@@ -17,7 +17,7 @@ export const stages: Stage[] = [
     id: "intro",
     kicker: "Frontend developer",
     title: "Ron San Jose",
-    body: "I build interfaces that feel fast, precise and alive — where motion has a reason and every pixel earns its place.",
+    body: "I build interfaces that feel fast, precise and alive ~ where motion has a reason and every pixel earns its place.",
   },
   {
     id: "about",
@@ -31,9 +31,9 @@ export const stages: Stage[] = [
     title: "The stack.",
     body: "Tools chosen for the job, not the trend.",
     items: [
-      { n: "01", a: "React, Next.js, TypeScript", b: "— product UI and design systems" },
-      { n: "02", a: "WebGL, Three.js, GSAP", b: "— motion and 3D on the web" },
-      { n: "03", a: "Node, GraphQL, Vite", b: "— tooling and the edges of the stack" },
+      { n: "01", a: "React, Next.js, TypeScript", b: "~ product UI and design systems" },
+      { n: "02", a: "WebGL, Three.js, GSAP", b: "~ motion and 3D on the web" },
+      { n: "03", a: "Node, GraphQL, Vite", b: "~ tooling and the edges of the stack" },
     ],
   },
   {
@@ -42,9 +42,9 @@ export const stages: Stage[] = [
     title: "Selected work.",
     body: "A few things I am proud to have shipped.",
     items: [
-      { n: "01", a: "Project name", b: "— one-line description, role, year" },
-      { n: "02", a: "Project name", b: "— one-line description, role, year" },
-      { n: "03", a: "Project name", b: "— one-line description, role, year" },
+      { n: "01", a: "Project name", b: "~ one-line description, role, year" },
+      { n: "02", a: "Project name", b: "~ one-line description, role, year" },
+      { n: "03", a: "Project name", b: "~ one-line description, role, year" },
     ],
   },
   {
@@ -64,8 +64,8 @@ export const stages: Stage[] = [
     title: "In the open.",
     body: "Libraries and experiments I maintain or contribute to.",
     items: [
-      { n: "★", a: "library-name", b: "— what it does, in one line" },
-      { n: "★", a: "library-name", b: "— what it does, in one line" },
+      { n: "★", a: "library-name", b: "~ what it does, in one line" },
+      { n: "★", a: "library-name", b: "~ what it does, in one line" },
     ],
   },
   {
