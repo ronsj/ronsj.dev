@@ -53,9 +53,9 @@ export const stages: Stage[] = [
     title: "Developer DNA.",
     body: "Where I have been.",
     items: [
-      { n: "2023—", a: "Senior Frontend Engineer", b: "· Company" },
-      { n: "2020—23", a: "Frontend Engineer", b: "· Company" },
-      { n: "2018—20", a: "UI Developer", b: "· Studio" },
+      { n: "2023–20__", a: "Senior Frontend Engineer", b: "· Company" },
+      { n: "2020–2023", a: "Frontend Engineer", b: "· Company" },
+      { n: "2018–2020", a: "UI Developer", b: "· Studio" },
     ],
   },
   {
