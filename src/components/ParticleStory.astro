@@ -28,6 +28,8 @@ const gutter = "px-[clamp(20px,5vw,64px)]";
     <header
       class:list={[
         "absolute inset-x-0 top-0 z-10 flex items-center justify-between py-7 text-[15px] tracking-[0.02em]",
+        // Below desktop the particles pass under the header, so fade a white backdrop in behind it.
+        "bg-linear-to-b from-white to-transparent lg:bg-none",
         gutter,
       ]}
     >

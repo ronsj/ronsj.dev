@@ -11,9 +11,17 @@ const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-prac
  */
 async function audit(page: Page) {
   await page.locator("[data-canvas]").evaluate((c: HTMLElement) => (c.style.visibility = "hidden"));
-  const results = await new AxeBuilder({ page }).withTags(TAGS).analyze();
+  const results = await new AxeBuilder({ page }).withTags(TAGS).exclude("header").analyze();
   expect(results.violations).toEqual([]);
   expect(results.incomplete.filter((r) => r.id === "color-contrast")).toEqual([]);
+
+  // On narrow screens the header sits on a white-to-transparent gradient, which axe can't measure.
+  // Its dark text has the least contrast against the page background at the transparent end, so
+  // check that worst case by measuring with the gradient removed.
+  await page.locator("header").evaluate((h: HTMLElement) => (h.style.backgroundImage = "none"));
+  const header = await new AxeBuilder({ page }).withTags(TAGS).include("header").analyze();
+  expect(header.violations).toEqual([]);
+  expect(header.incomplete.filter((r) => r.id === "color-contrast")).toEqual([]);
 }
 
 for (const [stage, name] of [
