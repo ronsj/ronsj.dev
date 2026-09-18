@@ -10,10 +10,13 @@
   --color-accent: #2f6fdd;
   /* Accent for small text: a touch darker than --color-accent to meet WCAG AA (4.5:1) on paper. */
   --color-accent-text: #2b68d4;
+}
 
-  --font-sans: "Manrope", Helvetica, Arial, sans-serif;
-  --font-display: "Sora", Helvetica, Arial, sans-serif;
-  --font-mono: "DM Mono", ui-monospace, "SF Mono", Menlo, monospace;
+/* Font stacks come from Astro's font pipeline (see `fonts` in astro.config.mjs). */
+@theme inline {
+  --font-sans: var(--font-manrope);
+  --font-display: var(--font-sora);
+  --font-mono: var(--font-dm-mono);
 }
 
 @layer base {
