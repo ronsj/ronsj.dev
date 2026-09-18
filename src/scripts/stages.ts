@@ -10,7 +10,9 @@ export function initStages(root: HTMLElement) {
   const anchors = [...root.querySelectorAll<HTMLElement>("[data-anchor]")];
   const stageNum = root.querySelector<HTMLElement>("[data-stage-num]");
   const bar = root.querySelector<HTMLElement>("[data-bar]");
-  const hint = root.querySelector<HTMLElement>("[data-hint]");
+  const prev = root.querySelector<HTMLButtonElement>("[data-prev]");
+  const next = root.querySelector<HTMLButtonElement>("[data-next]");
+  const live = root.querySelector<HTMLElement>("[data-live]");
   if (!canvas || !text || panels.length === 0) return;
 
   const last = panels.length - 1;
@@ -35,6 +37,15 @@ export function initStages(root: HTMLElement) {
   const show = (i: number) => {
     panels.forEach((el, j) => el.toggleAttribute("data-active", j === i));
     text.dataset.visible = "true";
+    // Ends stay focusable but inert, so focus isn't dropped when the last section is reached.
+    prev?.setAttribute("aria-disabled", String(i === 0));
+    next?.setAttribute("aria-disabled", String(i === last));
+  };
+
+  // Content swaps in place without moving focus, so tell screen readers what's now on screen.
+  const announce = (i: number) => {
+    const title = panels[i]?.querySelector("h1, h2")?.textContent?.trim() ?? "";
+    if (live) live.textContent = `Section ${i + 1} of ${last + 1}: ${title}`;
   };
 
   const maxScroll = () => Math.max(1, root.offsetHeight - window.innerHeight);
@@ -44,16 +55,21 @@ export function initStages(root: HTMLElement) {
     const p = Math.max(0, Math.min(1, top / maxScroll())) * last;
     if (field) field.progress = p;
 
-    const next = Math.min(last, Math.round(p));
-    if (next !== stage) {
-      stage = next;
+    const target = Math.min(last, Math.round(p));
+    if (target !== stage) {
+      stage = target;
       text.dataset.visible = "false";
       window.clearTimeout(swapTimer);
-      swapTimer = window.setTimeout(() => show(stage), motion.matches ? 0 : SWAP_MS);
+      swapTimer = window.setTimeout(
+        () => {
+          show(stage);
+          announce(stage);
+        },
+        motion.matches ? 0 : SWAP_MS,
+      );
     }
     if (stageNum) stageNum.textContent = String(stage + 1).padStart(2, "0");
     if (bar) bar.style.width = `${Math.round((p / last) * 100)}%`;
-    if (hint) hint.style.opacity = p < 0.2 ? "1" : "0";
   };
 
   const scrollToStage = (i: number, smooth = !motion.matches) => {
@@ -63,6 +79,14 @@ export function initStages(root: HTMLElement) {
       behavior: smooth ? "smooth" : "auto",
     });
   };
+
+  // Step buttons: move one section at a time, ignoring clicks at either end.
+  prev?.addEventListener("click", () => {
+    if (stage > 0) scrollToStage(stage - 1);
+  });
+  next?.addEventListener("click", () => {
+    if (stage < last) scrollToStage(stage + 1);
+  });
 
   // In-page nav: smooth scroll to the stage's slot and morph straight to its shape.
   document.addEventListener("click", (e) => {

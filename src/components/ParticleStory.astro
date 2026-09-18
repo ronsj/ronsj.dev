@@ -126,24 +126,52 @@ const gutter = "px-[clamp(20px,5vw,64px)]";
       </div>
     </main>
 
-    <div
-      aria-hidden="true"
+    <nav
+      aria-label="Sections"
       class="absolute right-[clamp(20px,5vw,64px)] bottom-8 flex items-center gap-4 text-sm tracking-[0.08em]"
     >
-      <span data-stage-num class="font-display text-base font-bold">01</span>
+      <span aria-hidden="true" data-stage-num class="font-display text-base font-bold">01</span>
       <span class="relative block h-0.5 w-[120px] bg-rule">
         <span data-bar class="absolute inset-y-0 left-0 w-0 bg-accent transition-[width] duration-200 ease-linear motion-reduce:transition-none"
         ></span>
+        <div class="absolute bottom-full left-1/2 mb-1 flex -translate-x-1/2 gap-1 text-muted">
+          <button
+            type="button"
+            data-prev
+            aria-label="Previous section"
+            class="grid size-8 place-items-center rounded-sm transition-colors hover:text-ink aria-disabled:cursor-default aria-disabled:opacity-40 aria-disabled:hover:text-muted"
+          >
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M3 10l5-5 5 5"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+          <button
+            type="button"
+            data-next
+            aria-label="Next section"
+            class="grid size-8 place-items-center rounded-sm transition-colors hover:text-ink aria-disabled:cursor-default aria-disabled:opacity-40 aria-disabled:hover:text-muted"
+          >
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M3 6l5 5 5-5"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
       </span>
-      <span class="text-muted">{String(stages.length).padStart(2, "0")}</span>
-    </div>
-    <div
-      data-hint
-      aria-hidden="true"
-      class="absolute bottom-8 left-[clamp(20px,5vw,64px)] text-sm tracking-[0.12em] text-muted uppercase transition-opacity duration-400 motion-reduce:transition-none"
-    >
-      Scroll
-    </div>
+      <span aria-hidden="true" class="text-muted">{String(stages.length).padStart(2, "0")}</span>
+      <p data-live aria-live="polite" class="sr-only"></p>
+    </nav>
   </div>
 </div>
 
