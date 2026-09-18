@@ -13,6 +13,7 @@
 
   --font-sans: "Manrope", Helvetica, Arial, sans-serif;
   --font-display: "Sora", Helvetica, Arial, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, "SF Mono", Menlo, monospace;
 }
 
 @layer base {
