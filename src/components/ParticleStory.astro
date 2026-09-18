@@ -42,7 +42,7 @@ const gutter = "px-[clamp(20px,5vw,64px)]";
 
     <main
       class:list={[
-        "pointer-events-none absolute inset-y-0 left-0 flex w-[min(100%,600px)] flex-col justify-center pt-24 pb-20",
+        "pointer-events-none absolute inset-y-0 left-0 flex w-[min(100%,600px)] flex-col justify-center pt-24 pb-20 @container",
         gutter,
       ]}
     >
@@ -77,7 +77,13 @@ const gutter = "px-[clamp(20px,5vw,64px)]";
                 </p>
                 <Heading
                   id={titleId}
-                  class="mb-[22px] font-display text-[clamp(44px,7vw,96px)] leading-[0.98] font-extrabold tracking-[-0.02em] text-balance"
+                  class:list={[
+                    "mb-[22px] font-display leading-[0.98] font-extrabold tracking-[-0.02em]",
+                    // The name always stays on one line: size it from the column width (the name is ~6.7em wide).
+                    i === 0
+                      ? "text-[clamp(40px,14.5cqi,96px)] whitespace-nowrap"
+                      : "text-[clamp(44px,7vw,96px)] text-balance",
+                  ]}
                 >
                   {s.title}
                 </Heading>
