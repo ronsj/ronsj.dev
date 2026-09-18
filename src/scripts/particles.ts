@@ -121,11 +121,13 @@ export class ParticleField {
     const c2 = Math.cos(pitch);
     const s2 = Math.sin(pitch);
 
-    // Wide screens: centre the shape in the space right of the text column. Narrow: lower centre.
+    // Wide screens: centre the shape in the space right of the text column.
+    // Narrow: push it to the top-right corner (partly off-screen is fine) and fade it so text stays readable.
     const wide = W > 900;
     const textEdge = Math.min(W, 600) + 24;
-    const cxs = wide ? (textEdge + W) / 2 : W * 0.5;
-    const cys = wide ? H * 0.5 : H * 0.66;
+    const cxs = wide ? (textEdge + W) / 2 : W * 0.8;
+    const cys = wide ? H * 0.5 : H * 0.28;
+    const fade = wide ? 1 : 0.5;
     const cloudR = i0 === 0 ? 2.1 - t : 1.1;
     const half = wide ? (W - textEdge) / 2 - 24 : W * 0.46;
     const fit = Math.max(1.3, cloudR);
@@ -167,7 +169,7 @@ export class ParticleField {
     for (let j = 0; j < n; j++) {
       const i = order[j]!;
       const f = pf[i]!;
-      ctx.globalAlpha = Math.max(0.15, Math.min(0.95, 0.25 + (f - 0.6) * 1.6));
+      ctx.globalAlpha = Math.max(0.15, Math.min(0.95, 0.25 + (f - 0.6) * 1.6)) * fade;
       ctx.beginPath();
       ctx.arc(px[i]!, py[i]!, Math.max(0.6, size * f), 0, Math.PI * 2);
       ctx.fill();
