@@ -1,0 +1,149 @@
+---
+import { contactLinks, stages } from "../data/stages";
+
+interface Props {
+  /** Number of particles in the field (1000–12000). */
+  particles?: number;
+}
+
+const { particles = 5000 } = Astro.props;
+const gutter = "px-[clamp(20px,5vw,64px)]";
+---
+
+<div
+  data-story
+  data-particles={particles}
+  class="relative bg-paper"
+  style={`height: ${stages.length * 100}vh`}
+>
+  {
+    stages.map((s, i) => (
+      <span id={s.id} data-anchor class="absolute left-0" style={`top: ${i * 100}vh`} />
+    ))
+  }
+
+  <div class="sticky top-0 h-screen overflow-hidden">
+    <canvas data-canvas aria-hidden="true" class="absolute inset-0 block size-full"></canvas>
+
+    <header
+      class:list={[
+        "absolute inset-x-0 top-0 z-10 flex items-center justify-between py-7 text-[15px] tracking-[0.02em]",
+        gutter,
+      ]}
+    >
+      <a href="#intro" class="font-display text-lg font-bold" aria-label="Ron San Jose, back to top"
+        >RSJ</a
+      >
+      <nav aria-label="Primary" class="flex gap-[22px]">
+        <a href="#work" class="transition-colors hover:text-accent-text">Work</a>
+        <a href="#contact" class="transition-colors hover:text-accent-text">Contact</a>
+      </nav>
+    </header>
+
+    <main
+      class:list={[
+        "pointer-events-none absolute inset-y-0 left-0 flex w-[min(100%,600px)] flex-col justify-center pt-24 pb-20",
+        gutter,
+      ]}
+    >
+      <div
+        data-text
+        data-visible="true"
+        class="pointer-events-auto transition-[opacity,translate] duration-[280ms] ease-out data-[visible=false]:translate-y-3.5 data-[visible=false]:opacity-0 motion-reduce:transition-none"
+      >
+        {
+          stages.map((s, i) => {
+            const Heading = i === 0 ? "h1" : "h2";
+            const titleId = `${s.id}-title`;
+            return (
+              <section data-stage data-active={i === 0 ? "" : undefined} aria-labelledby={titleId}>
+                <p class="mb-[18px] flex items-center gap-3 text-sm font-medium tracking-[0.18em] text-accent-text uppercase">
+                  <svg
+                    aria-hidden="true"
+                    width="32"
+                    height="10"
+                    viewBox="0 0 32 10"
+                    fill="none"
+                    class="block flex-none"
+                  >
+                    <path
+                      d="M1 6.5C5 1.5 9 1.5 13 5s8 3.5 12 -1.5"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                  {s.kicker}
+                </p>
+                <Heading
+                  id={titleId}
+                  class="mb-[22px] font-display text-[clamp(44px,7vw,96px)] leading-[0.98] font-extrabold tracking-[-0.02em] text-balance"
+                >
+                  {s.title}
+                </Heading>
+                <p class="max-w-[46ch] text-[clamp(18px,1.6vw,22px)] leading-[1.45] text-pretty text-body">
+                  {s.body}
+                </p>
+                {s.items && (
+                  <ul class="mt-[26px] flex flex-col gap-2.5">
+                    {s.items.map((it) => (
+                      <li class="grid grid-cols-[auto_1fr] items-baseline gap-3.5 border-t border-rule pt-2.5 text-lg leading-[1.35]">
+                        <span class="font-display text-[15px] font-bold text-accent-text">{it.n}</span>
+                        <span>
+                          <strong class="font-medium text-ink">{it.a}</strong>{" "}
+                          <span class="text-muted">{it.b}</span>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {s.id === "contact" && (
+                  <ul class="mt-7 flex flex-wrap gap-x-[26px] gap-y-3.5 text-[19px]">
+                    {contactLinks.map((l) => (
+                      <li>
+                        <a
+                          href={l.href}
+                          class="link-underline"
+                          {...(l.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                        >
+                          {l.label}
+                          {l.external && <span class="sr-only"> (opens in a new tab)</span>}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            );
+          })
+        }
+      </div>
+    </main>
+
+    <div
+      aria-hidden="true"
+      class="absolute right-[clamp(20px,5vw,64px)] bottom-8 flex items-center gap-4 text-sm tracking-[0.08em]"
+    >
+      <span data-stage-num class="font-display text-base font-bold">01</span>
+      <span class="relative block h-0.5 w-[120px] bg-rule">
+        <span data-bar class="absolute inset-y-0 left-0 w-0 bg-accent transition-[width] duration-200 ease-linear motion-reduce:transition-none"
+        ></span>
+      </span>
+      <span class="text-muted">{String(stages.length).padStart(2, "0")}</span>
+    </div>
+    <div
+      data-hint
+      aria-hidden="true"
+      class="absolute bottom-8 left-[clamp(20px,5vw,64px)] text-sm tracking-[0.12em] text-muted uppercase transition-opacity duration-400 motion-reduce:transition-none"
+    >
+      Scroll
+    </div>
+  </div>
+</div>
+
+<script>
+  import { initStages } from "../scripts/stages";
+
+  const root = document.querySelector<HTMLElement>("[data-story]");
+  if (root) initStages(root);
+</script>

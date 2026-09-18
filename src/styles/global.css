@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #f5f5f5;
+  --color-ink: #1c2230;
+  --color-body: #3f4757;
+  --color-muted: #6a6e76;
+  --color-rule: #dcdcdc;
+  /* Particles, underlines, progress bar, selection. */
+  --color-accent: #2f6fdd;
+  /* Accent for small text: a touch darker than --color-accent to meet WCAG AA (4.5:1) on paper. */
+  --color-accent-text: #2b68d4;
+
+  --font-sans: "Manrope", Helvetica, Arial, sans-serif;
+  --font-display: "Sora", Helvetica, Arial, sans-serif;
+}
+
+@layer base {
+  html {
+    @apply bg-paper font-sans text-ink antialiased;
+  }
+
+  ::selection {
+    @apply bg-accent text-white;
+  }
+
+  :focus-visible {
+    @apply rounded-xs outline-2 outline-offset-4 outline-accent;
+  }
+}
+
+@utility link-underline {
+  @apply border-b-2 border-accent text-ink transition-colors hover:text-accent-text;
+}
+
+/* Only the active stage is shown; the rest stay in the accessibility tree for screen readers. */
+[data-stage]:not([data-active]) {
+  @apply sr-only;
+}
