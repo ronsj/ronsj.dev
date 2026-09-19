@@ -28,3 +28,6 @@ pnpm-debug.log*
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# cloudflare local state
+.wrangler/
