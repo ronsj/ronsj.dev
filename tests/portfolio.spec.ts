@@ -67,6 +67,50 @@ test("Contact nav link shows contact links", async ({ page }) => {
   await expect(activeStage(page).getByRole("listitem")).toHaveText([/GitHub/, /LinkedIn/, "Email"]);
 });
 
+test("nav links never show a section between the current one and the destination", async ({
+  page,
+}) => {
+  // Record every stage that becomes active, and every counter value, while the smooth scroll is in flight.
+  await page.evaluate(() => {
+    const seen = { active: [] as number[], counter: [] as string[] };
+    const panels = [...document.querySelectorAll("[data-stage]")];
+    new MutationObserver((records) => {
+      for (const r of records) {
+        const el = r.target as HTMLElement;
+        if (el.hasAttribute("data-active")) seen.active.push(panels.indexOf(el));
+      }
+    }).observe(document.querySelector("[data-text]")!, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["data-active"],
+    });
+    const counter = document.querySelector("[data-stage-num]")!;
+    new MutationObserver(() => {
+      const value = counter.textContent ?? "";
+      if (seen.counter.at(-1) !== value) seen.counter.push(value);
+    }).observe(counter, { childList: true, characterData: true, subtree: true });
+    (window as unknown as { seenStages: typeof seen }).seenStages = seen;
+  });
+  await page
+    .getByRole("navigation", { name: "Primary" })
+    .getByRole("link", { name: "Contact" })
+    .click();
+  await expect(page.getByRole("heading", { name: "Let’s connect." })).toBeVisible();
+  // Let the scroll settle before checking what was shown along the way.
+  await expect
+    .poll(async () => {
+      const a = await page.evaluate(() => window.scrollY);
+      await page.waitForTimeout(200);
+      return (await page.evaluate(() => window.scrollY)) === a;
+    })
+    .toBe(true);
+  const seen = await page.evaluate(
+    () => (window as unknown as { seenStages: { active: number[]; counter: string[] } }).seenStages,
+  );
+  expect(seen.active).toEqual([6]);
+  expect(seen.counter).toEqual(["07"]);
+});
+
 test("deep link opens on the matching stage", async ({ page }) => {
   await page.goto("/#contact");
   await expect(page.getByRole("heading", { name: "Let’s connect." })).toBeVisible();

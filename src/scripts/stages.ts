@@ -3,6 +3,9 @@ import { ParticleField } from "./particles";
 /** How long the outgoing text fades before the next stage's text swaps in (matches the CSS transition). */
 const SWAP_MS = 260;
 
+/** Keys that scroll the page, and so interrupt a smooth scroll the way a wheel or touch does. */
+const SCROLL_KEYS = new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "]);
+
 export function initStages(root: HTMLElement) {
   const canvas = root.querySelector<HTMLCanvasElement>("[data-canvas]");
   const text = root.querySelector<HTMLElement>("[data-text]");
@@ -33,6 +36,13 @@ export function initStages(root: HTMLElement) {
 
   let stage = 0;
   let swapTimer = 0;
+  /**
+   * Set while a nav link or step button smooth-scrolls to a stage. Until the scroll arrives, the text
+   * tracks this stage instead of whichever one the scroll position happens to be passing through, so
+   * no intermediate section flashes in. Cleared on arrival, or as soon as the user scrolls themselves.
+   */
+  let pinned: number | null = null;
+  let settleTimer = 0;
 
   const show = (i: number) => {
     panels.forEach((el, j) => el.toggleAttribute("data-active", j === i));
@@ -49,13 +59,33 @@ export function initStages(root: HTMLElement) {
   };
 
   const maxScroll = () => Math.max(1, root.offsetHeight - window.innerHeight);
+  const progress = () => {
+    const top = window.scrollY - root.offsetTop;
+    return Math.max(0, Math.min(1, top / maxScroll())) * last;
+  };
+
+  const unpin = () => {
+    pinned = null;
+    window.clearTimeout(settleTimer);
+  };
 
   const readScroll = () => {
-    const top = window.scrollY - root.offsetTop;
-    const p = Math.max(0, Math.min(1, top / maxScroll())) * last;
+    const p = progress();
     if (field) field.progress = p;
 
-    const target = Math.min(last, Math.round(p));
+    if (pinned !== null) {
+      if (Math.abs(p - pinned) < 0.02) unpin();
+      else {
+        // A smooth scroll the browser abandoned (e.g. the tab lost focus) would otherwise leave the
+        // text pinned forever, so release once scroll events stop arriving.
+        window.clearTimeout(settleTimer);
+        settleTimer = window.setTimeout(() => {
+          unpin();
+          readScroll();
+        }, 200);
+      }
+    }
+    const target = pinned ?? Math.min(last, Math.round(p));
     if (target !== stage) {
       stage = target;
       text.dataset.visible = "false";
@@ -73,6 +103,9 @@ export function initStages(root: HTMLElement) {
   };
 
   const scrollToStage = (i: number, smooth = !motion.matches) => {
+    unpin();
+    // Only pin when there's a journey: a scroll that's already at its target fires no scroll events.
+    if (smooth && Math.abs(progress() - i) >= 0.02) pinned = i;
     field?.jumpTo(i);
     window.scrollTo({
       top: root.offsetTop + (maxScroll() * i) / last,
@@ -112,6 +145,21 @@ export function initStages(root: HTMLElement) {
   });
 
   window.addEventListener("scroll", readScroll, { passive: true });
+  // The user taking over mid-jump cancels the browser's smooth scroll; hand the text back to the scroll position.
+  const takeOver = () => {
+    if (pinned === null) return;
+    unpin();
+    readScroll();
+  };
+  window.addEventListener("wheel", takeOver, { passive: true });
+  window.addEventListener("touchstart", takeOver, { passive: true });
+  window.addEventListener("keydown", (e) => {
+    if (!SCROLL_KEYS.has(e.key)) return;
+    // Space on a control activates it (e.g. the step buttons) rather than scrolling.
+    if (e.key === " " && (e.target as Element | null)?.closest("button, input, select, textarea"))
+      return;
+    takeOver();
+  });
   window.addEventListener("resize", () => {
     field?.resize();
     readScroll();
