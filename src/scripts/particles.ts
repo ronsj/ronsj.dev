@@ -130,7 +130,7 @@ export class ParticleField {
     const cxs = wide ? (textEdge + W) / 2 : W * 0.8;
     const cys = wide ? H * 0.5 : H * 0.28;
     // Particle opacity by device class: phones, tablets (≥768px), desktops (≥1024px).
-    const fade = W >= 1024 ? 0.8 : W >= 768 ? 0.4 : 0.2;
+    const fade = W >= 1024 ? 0.6 : W >= 768 ? 0.4 : 0.2;
     // The hero cloud is bigger than the other shapes, so zoom out in proportion to how much of it is
     // on screen. This stays continuous whichever direction we morph, including nav jumps.
     const cloudW = (i0 === 0 ? 1 - t : 0) + (i1 === 0 ? t : 0);
