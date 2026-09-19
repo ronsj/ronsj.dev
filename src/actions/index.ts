@@ -28,12 +28,14 @@ export const server = {
       "cf-turnstile-response": z.string().nullish(),
     }),
     handler: async ({ name, email, message, company, "cf-turnstile-response": token }, context) => {
+      // Drop honeypot hits before Turnstile so bots get the same quiet success either way and we
+      // don't spend a siteverify round trip on them.
+      if (company) return { ok: true };
       await requireTurnstile(
         token,
         "contact",
         context.request.headers.get("CF-Connecting-IP") ?? undefined,
       );
-      if (company) return { ok: true };
       try {
         await env.EMAIL.send({
           from: { name: "ronsj.dev contact form", email: env.CONTACT_FROM },
