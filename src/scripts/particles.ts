@@ -8,7 +8,7 @@ export interface ParticleOptions {
 }
 
 /** Index of the solar-system shape, which is shown tilted on its axis. */
-const ORBITS_SHAPE = 3;
+const ORBITS_SHAPE = 2;
 /** Roll applied to the solar system after it spins, so it turns about its own tilted axis (radians). */
 const ORBITS_ROLL = -0.42;
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));

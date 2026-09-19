@@ -30,10 +30,10 @@ test("scrolling steps through every stage", async ({ page }) => {
   const titles = [
     "Ron San Jose",
     "Pixels with purpose.",
-    "The stack.",
     "Selected work.",
     "Developer DNA.",
     "In the open.",
+    "The stack.",
     "Let’s connect.",
   ];
   for (const [i, title] of titles.entries()) {

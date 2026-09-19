@@ -206,7 +206,7 @@ export interface ShapeSet {
 
 export function buildShapes(n: number): ShapeSet {
   return {
-    shapes: [cloud(n), sphere(n), layers(n), orbits(n), helix(n), wave(n), galaxy(n)],
+    shapes: [cloud(n), sphere(n), orbits(n), helix(n), wave(n), layers(n), galaxy(n)],
     scatter: scatter(n),
     seeds: make(n, () => [Math.random(), Math.random(), Math.random()]),
   };

@@ -26,17 +26,6 @@ export const stages: Stage[] = [
     body: "Six years turning ambiguous briefs into shipped products. I care about performance budgets, accessible markup and the small details people feel but never notice.",
   },
   {
-    id: "stack",
-    kicker: "Skills / stack",
-    title: "The stack.",
-    body: "Tools chosen for the job, not the trend.",
-    items: [
-      { n: "01", a: "React, Next.js, TypeScript", b: "~ product UI and design systems" },
-      { n: "02", a: "WebGL, Three.js, GSAP", b: "~ motion and 3D on the web" },
-      { n: "03", a: "Node, GraphQL, Vite", b: "~ tooling and the edges of the stack" },
-    ],
-  },
-  {
     id: "work",
     kicker: "Selected work",
     title: "Selected work.",
@@ -66,6 +55,17 @@ export const stages: Stage[] = [
     items: [
       { n: "★", a: "library-name", b: "~ what it does, in one line" },
       { n: "★", a: "library-name", b: "~ what it does, in one line" },
+    ],
+  },
+  {
+    id: "stack",
+    kicker: "Skills / stack",
+    title: "The stack.",
+    body: "Tools chosen for the job, not the trend.",
+    items: [
+      { n: "01", a: "React, Next.js, TypeScript", b: "~ product UI and design systems" },
+      { n: "02", a: "WebGL, Three.js, GSAP", b: "~ motion and 3D on the web" },
+      { n: "03", a: "Node, GraphQL, Vite", b: "~ tooling and the edges of the stack" },
     ],
   },
   {

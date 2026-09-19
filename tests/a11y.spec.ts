@@ -26,7 +26,7 @@ async function audit(page: Page) {
 
 for (const [stage, name] of [
   [0, "intro"],
-  [2, "stack"],
+  [5, "stack"],
   [6, "contact"],
 ] as const) {
   test(`no axe violations on the ${name} stage`, async ({ page }) => {
