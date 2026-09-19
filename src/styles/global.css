@@ -10,6 +10,8 @@
   --color-accent: #2f6fdd;
   /* Accent for small text: a touch darker than --color-accent to meet WCAG AA (4.5:1) on paper. */
   --color-accent-text: #2b68d4;
+  /* Form validation messages: meets AA on paper. */
+  --color-error: #b42318;
 }
 
 /* Font stacks come from Astro's font pipeline (see `fonts` in astro.config.mjs). */

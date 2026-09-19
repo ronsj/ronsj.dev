@@ -60,18 +60,11 @@ test("Contact nav link shows contact links", async ({ page }) => {
     .click();
   await expect(page).toHaveURL(/#contact$/);
   await expect(page.getByRole("heading", { name: "Let’s connect." })).toBeVisible();
-  await expect(page.getByRole("link", { name: "ronsj1@gmail.com" })).toHaveAttribute(
-    "href",
-    "mailto:ronsj1@gmail.com",
-  );
+  await expect(activeStage(page).getByRole("button", { name: "Email" })).toBeVisible();
   const github = page.getByRole("link", { name: /GitHub/ });
   await expect(github).toBeVisible();
   await expect(github).toHaveAttribute("rel", "noopener noreferrer");
-  await expect(activeStage(page).getByRole("listitem").getByRole("link")).toHaveText([
-    /GitHub/,
-    /LinkedIn/,
-    "ronsj1@gmail.com",
-  ]);
+  await expect(activeStage(page).getByRole("listitem")).toHaveText([/GitHub/, /LinkedIn/, "Email"]);
 });
 
 test("deep link opens on the matching stage", async ({ page }) => {
@@ -80,9 +73,9 @@ test("deep link opens on the matching stage", async ({ page }) => {
 });
 
 test("keyboard focus brings an off-screen stage into view", async ({ page }) => {
-  await page.getByRole("link", { name: "ronsj1@gmail.com" }).focus();
+  await page.getByRole("link", { name: /LinkedIn/ }).focus();
   await expect(page.getByRole("heading", { name: "Let’s connect." })).toBeVisible();
-  await expect(page.getByRole("link", { name: "ronsj1@gmail.com" })).toBeInViewport();
+  await expect(page.getByRole("link", { name: /LinkedIn/ })).toBeInViewport();
 });
 
 test("all stage content stays available to assistive tech", async ({ page }) => {

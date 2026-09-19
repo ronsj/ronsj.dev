@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ronsj-com",
+  "compatibility_date": "2026-09-17",
+  // Contact form: the Worker sends mail through Email Routing. The sender must be an address on a
+  // zone with Email Routing enabled, and the destination must be a verified destination address.
+  "send_email": [{ "name": "EMAIL", "destination_address": "ronsj1@gmail.com" }],
+  "vars": {
+    "CONTACT_FROM": "contact@ronsj.dev",
+    "CONTACT_TO": "ronsj1@gmail.com",
+  },
+}

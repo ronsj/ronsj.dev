@@ -4,16 +4,17 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro check && astro build",
+    "dev": "wrangler types && astro dev",
+    "build": "wrangler types && astro check && astro build",
     "preview": "astro preview",
-    "check": "astro check",
+    "check": "wrangler types && astro check",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "test:e2e": "playwright test",
-    "prepare": "lefthook install || true"
+    "prepare": "lefthook install || true",
+    "types": "wrangler types"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.2",

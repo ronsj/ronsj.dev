@@ -133,6 +133,11 @@ const opticalOffset = (title: string) =>
                         </a>
                       </li>
                     ))}
+                    <li>
+                      <button type="button" data-email-open class="link-underline cursor-pointer">
+                        Email
+                      </button>
+                    </li>
                   </ul>
                 )}
               </section>
@@ -141,6 +146,103 @@ const opticalOffset = (title: string) =>
         }
       </div>
     </main>
+
+    <dialog
+      data-email-dialog
+      aria-labelledby="email-dialog-title"
+      class="m-auto w-[min(100%-2rem,28rem)] rounded-md bg-paper p-6 text-ink shadow-2xl backdrop:bg-ink/40 sm:p-8"
+    >
+      <div class="mb-5 flex items-start justify-between gap-4">
+        <h2 id="email-dialog-title" class="font-display text-2xl font-bold">Send me a message</h2>
+        <button
+          type="button"
+          data-email-close
+          aria-label="Close dialog"
+          class="-mt-1 -mr-2 grid size-8 cursor-pointer place-items-center rounded-sm text-muted transition-colors hover:text-ink"
+        >
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
+
+      <form data-email-form class="flex flex-col gap-4">
+        <div class="flex flex-col gap-1.5">
+          <label for="email-name" class="text-sm font-medium">Name</label>
+          <input
+            id="email-name"
+            name="name"
+            type="text"
+            required
+            autocomplete="name"
+            maxlength="200"
+            aria-describedby="email-name-error"
+            class="rounded-sm border border-rule bg-white px-3 py-2 text-base aria-invalid:border-error"
+          />
+          <p id="email-name-error" data-error-for="name" hidden class="text-sm text-error"></p>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label for="email-email" class="text-sm font-medium">Email</label>
+          <input
+            id="email-email"
+            name="email"
+            type="email"
+            required
+            autocomplete="email"
+            maxlength="320"
+            aria-describedby="email-email-error"
+            class="rounded-sm border border-rule bg-white px-3 py-2 text-base aria-invalid:border-error"
+          />
+          <p id="email-email-error" data-error-for="email" hidden class="text-sm text-error"></p>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label for="email-message" class="text-sm font-medium">Message</label>
+          <textarea
+            id="email-message"
+            name="message"
+            required
+            rows="5"
+            maxlength="5000"
+            aria-describedby="email-message-error"
+            class="rounded-sm border border-rule bg-white px-3 py-2 text-base aria-invalid:border-error"
+          ></textarea>
+          <p id="email-message-error" data-error-for="message" hidden class="text-sm text-error"></p>
+        </div>
+        {/* Honeypot: invisible to people and skipped by assistive tech; bots tend to fill it. */}
+        <div class="hidden" aria-hidden="true">
+          <label>Company <input name="company" type="text" tabindex="-1" autocomplete="off" /></label>
+        </div>
+        <p data-email-status role="status" class="min-h-5 text-sm text-muted"></p>
+        <div class="flex items-center justify-end gap-3">
+          <button
+            type="button"
+            data-email-close
+            class="cursor-pointer rounded-sm px-4 py-2.5 text-sm font-medium text-muted transition-colors hover:text-ink"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="cursor-pointer rounded-sm bg-accent px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-text disabled:cursor-default disabled:opacity-60"
+          >
+            Send
+          </button>
+        </div>
+      </form>
+
+      <div data-email-success hidden class="flex flex-col gap-5">
+        <p class="text-lg leading-[1.45] text-body">
+          Thanks ~ your message is on its way. I’ll reply to the address you gave.
+        </p>
+        <button
+          type="button"
+          data-email-close
+          class="cursor-pointer self-end rounded-sm bg-accent px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-text"
+        >
+          Close
+        </button>
+      </div>
+    </dialog>
 
     <nav
       aria-label="Sections"
@@ -192,8 +294,12 @@ const opticalOffset = (title: string) =>
 </div>
 
 <script>
+  import { initContactForm } from "../scripts/contact";
   import { initStages } from "../scripts/stages";
 
   const root = document.querySelector<HTMLElement>("[data-story]");
-  if (root) initStages(root);
+  if (root) {
+    initStages(root);
+    initContactForm(root);
+  }
 </script>

@@ -29,3 +29,22 @@ once the folder is a git repo (or run `pnpm exec lefthook install`).
 - `src/scripts/particles.ts` — canvas renderer (projection, morphing, intro fly-in)
 - `src/scripts/stages.ts` — scroll → stage mapping, text swap, nav jumps, focus handling
 - `src/styles/global.css` — design tokens (`@theme`)
+
+## Contact form email
+
+The "Email" button on the contact section opens a form that posts to the `sendEmail` Astro Action
+(`src/actions/index.ts`). The action sends the message through Cloudflare's `send_email` Worker
+binding, declared in `wrangler.jsonc` as `EMAIL`, to the address in the `CONTACT_TO` var.
+
+For sending to work in production, the Cloudflare account needs:
+
+- **Email Routing enabled** on the zone that `CONTACT_FROM` belongs to (`contact@ronsj.dev` by
+  default; the sender must be an address on that zone).
+- **`CONTACT_TO` verified as a destination address** in Email Routing. The binding's
+  `destination_address` restricts sending to that one address.
+
+In `astro dev` and `astro preview`, workerd simulates the binding: nothing is delivered, the message
+is logged and its body written under `.wrangler/tmp/email/`.
+
+Run `pnpm types` (or any of `dev`, `build`, `check`, which run it first) to regenerate
+`worker-configuration.d.ts` after changing `wrangler.jsonc`.
