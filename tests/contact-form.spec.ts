@@ -9,12 +9,20 @@ const openDialog = async (page: Page) => {
   return dialog;
 };
 
+/** The suite builds with Turnstile's always-pass dummy sitekey, so the widget verifies on its own. */
+const awaitVerified = async (dialog: ReturnType<Page["getByRole"]>) => {
+  await expect(dialog.locator('input[name="cf-turnstile-response"]')).not.toHaveValue("");
+  await expect(dialog.getByRole("button", { name: "Send" })).toBeEnabled();
+};
+
 test("Email button opens an accessible dialog and Escape closes it", async ({ page }) => {
   const dialog = await openDialog(page);
   for (const name of ["Name", "Email", "Message"]) {
     await expect(dialog.getByLabel(name, { exact: true })).toHaveAttribute("required", "");
   }
   await expect(dialog.getByLabel("Name", { exact: true })).toBeFocused();
+  await expect(dialog.getByRole("button", { name: "Send" })).toBeDisabled();
+  await awaitVerified(dialog);
 
   const results = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"])
@@ -33,6 +41,7 @@ test("server validation errors are shown inline", async ({ page }) => {
   // "a@b" passes the browser's loose email check but not the action's, so the server has to answer.
   await dialog.getByLabel("Email", { exact: true }).fill("a@b");
   await dialog.getByLabel("Message", { exact: true }).fill("Hello");
+  await awaitVerified(dialog);
   await dialog.getByRole("button", { name: "Send" }).click();
 
   const emailField = dialog.getByLabel("Email", { exact: true });
@@ -40,6 +49,8 @@ test("server validation errors are shown inline", async ({ page }) => {
   await expect(emailField).toBeFocused();
   await expect(dialog.getByText("Please enter a valid email address.")).toBeVisible();
   await expect(dialog.getByRole("status")).toHaveText("Please check the highlighted fields.");
+  // The token was spent on that attempt; the widget must issue a fresh one before a retry.
+  await awaitVerified(dialog);
 });
 
 test("a valid submission sends and shows the confirmation", async ({ page }) => {
@@ -48,6 +59,7 @@ test("a valid submission sends and shows the confirmation", async ({ page }) => 
   await dialog.getByLabel("Name", { exact: true }).fill("Test Person");
   await dialog.getByLabel("Email", { exact: true }).fill("test@example.com");
   await dialog.getByLabel("Message", { exact: true }).fill("Hello from the test suite.");
+  await awaitVerified(dialog);
   await dialog.getByRole("button", { name: "Send" }).click();
 
   expect((await sent).status()).toBe(200);
@@ -56,4 +68,13 @@ test("a valid submission sends and shows the confirmation", async ({ page }) => 
   await expect(close).toBeFocused();
   await close.click();
   await expect(dialog).toBeHidden();
+});
+
+test("the action rejects a submission with no Turnstile token", async ({ page, baseURL }) => {
+  await page.goto("/");
+  const response = await page.request.post(`${baseURL}/_actions/sendEmail`, {
+    headers: { Accept: "application/json", Origin: baseURL! },
+    multipart: { name: "Bot", email: "bot@example.com", message: "No token here" },
+  });
+  expect(response.status()).toBe(403);
 });

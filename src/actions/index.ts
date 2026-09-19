@@ -1,6 +1,7 @@
 import { ActionError, defineAction } from "astro:actions";
 import { z } from "astro/zod";
 import { env } from "cloudflare:workers";
+import { requireTurnstile } from "./turnstile";
 
 export const server = {
   sendEmail: defineAction({
@@ -23,8 +24,15 @@ export const server = {
         .max(5000, "Please keep your message under 5,000 characters."),
       // Honeypot: hidden from people, filled in by bots. Anything here means we quietly drop the mail.
       company: z.string().nullish(),
+      // Turnstile token, injected into the form by the widget.
+      "cf-turnstile-response": z.string().nullish(),
     }),
-    handler: async ({ name, email, message, company }) => {
+    handler: async ({ name, email, message, company, "cf-turnstile-response": token }, context) => {
+      await requireTurnstile(
+        token,
+        "contact",
+        context.request.headers.get("CF-Connecting-IP") ?? undefined,
+      );
       if (company) return { ok: true };
       try {
         await env.EMAIL.send({

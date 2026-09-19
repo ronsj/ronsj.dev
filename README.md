@@ -48,3 +48,27 @@ is logged and its body written under `.wrangler/tmp/email/`.
 
 Run `pnpm types` (or any of `dev`, `build`, `check`, which run it first) to regenerate
 `worker-configuration.d.ts` after changing `wrangler.jsonc`.
+
+## Contact form bot protection (Turnstile)
+
+The contact form is protected by a Cloudflare Turnstile widget (sitekey `0x4AAAAAAE8wGzGjBwHSydBN`,
+registered for `ronsj.dev`). The widget script loads only when the dialog opens, and the Send button
+stays disabled until the widget issues a token. The `sendEmail` action verifies that token with
+Cloudflare's siteverify (`src/actions/turnstile.ts`) before anything else runs: it must succeed, carry
+the action `contact`, and report a hostname listed in the `TURNSTILE_HOSTNAMES` var.
+
+- **Production:** the widget secret is the `TURNSTILE_SECRET` secret on the `ronsj-dev` Worker
+  (set with `wrangler secret put`, never committed). `TURNSTILE_HOSTNAMES` is `ronsj.dev`.
+- **Local dev and tests:** Cloudflare's documented dummy keys are used instead, so nothing here needs
+  the real secret: `.env` sets `PUBLIC_TURNSTILE_SITE_KEY` to the always-pass sitekey and `.dev.vars`
+  sets `TURNSTILE_SECRET` to the always-pass secret with an empty hostname list. Both files are
+  gitignored; recreate them from the snippets below if they're missing.
+
+```
+# .env
+PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA
+
+# .dev.vars
+TURNSTILE_SECRET=1x0000000000000000000000000000000AA
+TURNSTILE_HOSTNAMES=
+```

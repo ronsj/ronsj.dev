@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "ronsj-com",
+  "name": "ronsj-dev",
   "compatibility_date": "2026-09-17",
   // Contact form: the Worker sends mail through Email Routing. The sender must be an address on a
   // zone with Email Routing enabled, and the destination must be a verified destination address.
@@ -8,5 +8,8 @@
   "vars": {
     "CONTACT_FROM": "contact@ronsj.dev",
     "CONTACT_TO": "ronsj1@gmail.com",
+    // Turnstile siteverify must report one of these frontend hostnames. Never list localhost here;
+    // local overrides live in .dev.vars. The widget secret is the TURNSTILE_SECRET Worker secret.
+    "TURNSTILE_HOSTNAMES": "ronsj.dev",
   },
 }

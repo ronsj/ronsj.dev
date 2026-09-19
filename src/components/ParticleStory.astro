@@ -9,6 +9,9 @@ interface Props {
 const { particles = 5000 } = Astro.props;
 const gutter = "px-[clamp(20px,5vw,64px)]";
 
+// Turnstile widget for the contact form. Public, so it's baked in; tests build with a dummy sitekey.
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "0x4AAAAAAE8wGzGjBwHSydBN";
+
 /**
  * Left side bearing of each heading's first glyph in Sora ExtraBold, in em (measured via canvas
  * `measureText`). Pulling the heading left by this much lines its ink up with the text below it.
@@ -212,6 +215,8 @@ const opticalOffset = (title: string) =>
         <div class="hidden" aria-hidden="true">
           <label>Company <input name="company" type="text" tabindex="-1" autocomplete="off" /></label>
         </div>
+        {/* Turnstile renders here on demand; it adds its own hidden cf-turnstile-response input to the form. */}
+        <div data-turnstile data-sitekey={turnstileSiteKey} class="min-h-[65px]"></div>
         <p data-email-status role="status" class="min-h-5 text-sm text-muted"></p>
         <div class="flex items-center justify-end gap-3">
           <button
@@ -223,6 +228,7 @@ const opticalOffset = (title: string) =>
           </button>
           <button
             type="submit"
+            disabled
             class="cursor-pointer rounded-sm bg-accent px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-text disabled:cursor-default disabled:opacity-60"
           >
             Send

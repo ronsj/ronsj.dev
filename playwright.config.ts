@@ -17,7 +17,8 @@ export default defineConfig({
     { name: "mobile", use: { ...devices["Pixel 7"] } },
   ],
   webServer: {
-    command: `pnpm build && pnpm preview --port ${PORT} --ignore-lock`,
+    // Build against Turnstile's always-pass dummy sitekey; .dev.vars supplies the matching secret.
+    command: `PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA pnpm build && pnpm preview --port ${PORT} --ignore-lock`,
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
