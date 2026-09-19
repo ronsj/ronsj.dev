@@ -8,6 +8,16 @@ interface Props {
 
 const { particles = 5000 } = Astro.props;
 const gutter = "px-[clamp(20px,5vw,64px)]";
+
+/**
+ * Left side bearing of each heading's first glyph in Sora ExtraBold, in em (measured via canvas
+ * `measureText`). Pulling the heading left by this much lines its ink up with the text below it.
+ */
+const bearings: Record<string, number> = { R: 0.074, P: 0.074, T: 0.02, S: 0.022, D: 0.074, I: 0.076, L: 0.074 };
+// Pulling by the full bearing reads as too far left, so use 80% of it.
+const OPTICAL_FACTOR = 0.8;
+const opticalOffset = (title: string) =>
+  `margin-left: -${((bearings[title[0] ?? ""] ?? 0) * OPTICAL_FACTOR).toFixed(4)}em`;
 ---
 
 <div
@@ -82,6 +92,7 @@ const gutter = "px-[clamp(20px,5vw,64px)]";
                 </p>
                 <Heading
                   id={titleId}
+                  style={opticalOffset(s.title)}
                   class:list={[
                     "mb-[22px] font-display leading-[0.98] font-extrabold tracking-[-0.02em] text-box-cap",
                     // The name always stays on one line: size it from the column width (the name is ~6.7em wide).
