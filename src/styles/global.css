@@ -33,6 +33,12 @@
   }
 }
 
+/* Trim the leading above cap height and below the baseline so headings sit flush with their neighbours. */
+@utility text-box-cap {
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
+}
+
 @utility link-underline {
   @apply border-b-2 border-accent text-ink transition-colors hover:text-accent-text;
 }
