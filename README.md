@@ -1,7 +1,7 @@
 # Ron San Jose — Portfolio
 
 Single-page, scroll-driven portfolio. A sticky canvas of 5,000 particles morphs through seven shapes
-(cloud → sphere → layers → orbits → DNA helix → wave → back to the cloud) while the copy steps through seven stages.
+(cloud → sphere → layers → orbits → DNA helix → wave → spiral galaxy) while the copy steps through seven stages.
 
 ## Stack
 

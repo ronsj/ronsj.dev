@@ -153,6 +153,40 @@ function wave(n: number): Shape {
   });
 }
 
+/** Spiral galaxy with a quasar core: bright bulge, two winding arms, a faint disc and thin polar jets. */
+function galaxy(n: number): Shape {
+  const ARMS = 2;
+  const TURNS = 1.3;
+  const R_MAX = 1.3;
+  const CORE_R = 0.22;
+  return make(n, () => {
+    const u = Math.random();
+    if (u < 0.14) return ball([0, 0, 0], CORE_R);
+    if (u < 0.19) {
+      // Polar jets: narrow cones along the spin axis, densest near the core.
+      const t = Math.random() ** 1.5;
+      const dir = Math.random() < 0.5 ? 1 : -1;
+      const spread = 0.02 + t * 0.06;
+      return [rnd() * spread, dir * (CORE_R * 0.6 + t * 1.0), rnd() * spread];
+    }
+    if (u < 0.34) {
+      // Diffuse disc halo between the arms.
+      const r = Math.sqrt(Math.random()) * R_MAX;
+      const a = Math.random() * TAU;
+      return [Math.cos(a) * r, rnd() * 0.04 * (1 - r / R_MAX) + rnd() * 0.01, Math.sin(a) * r];
+    }
+    // Spiral arms: logarithmic-ish sweep, wider and fainter toward the rim, thin in y.
+    const arm = Math.floor(Math.random() * ARMS);
+    const t = Math.random();
+    const r = 0.12 + t * (R_MAX - 0.12);
+    const a = (arm / ARMS) * TAU + t * TURNS * TAU;
+    const spread = 0.04 + t * 0.14;
+    const x = Math.cos(a) * r + rnd() * spread;
+    const z = Math.sin(a) * r + rnd() * spread;
+    return [x, rnd() * 0.035 * (1 - t * 0.6), z];
+  });
+}
+
 /** Random shell the particles fly in from on first load. */
 function scatter(n: number): Shape {
   return make(n, () => {
@@ -171,10 +205,8 @@ export interface ShapeSet {
 }
 
 export function buildShapes(n: number): ShapeSet {
-  // The story opens and closes on the same cloud.
-  const hero = cloud(n);
   return {
-    shapes: [hero, sphere(n), layers(n), orbits(n), helix(n), wave(n), hero],
+    shapes: [cloud(n), sphere(n), layers(n), orbits(n), helix(n), wave(n), galaxy(n)],
     scatter: scatter(n),
     seeds: make(n, () => [Math.random(), Math.random(), Math.random()]),
   };
