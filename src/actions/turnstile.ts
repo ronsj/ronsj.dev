@@ -35,6 +35,16 @@ export async function requireTurnstile(
       .filter(Boolean),
   );
 
+  // The secret is a Worker secret, not a var, so a deploy can go out without it. Fail loudly instead
+  // of letting siteverify answer "missing-input-secret", which would look like every visitor is a bot.
+  if (!env.TURNSTILE_SECRET) {
+    console.error("Turnstile: TURNSTILE_SECRET is not set");
+    throw new ActionError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Sorry, the contact form isn't configured correctly. Please try again later.",
+    });
+  }
+
   let result: SiteverifyResult;
   try {
     const response = await fetch(SITEVERIFY, {
