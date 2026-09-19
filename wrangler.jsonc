@@ -10,6 +10,6 @@
     "CONTACT_TO": "ronsj1@gmail.com",
     // Turnstile siteverify must report one of these frontend hostnames. Never list localhost here;
     // local overrides live in .dev.vars. The widget secret is the TURNSTILE_SECRET Worker secret.
-    "TURNSTILE_HOSTNAMES": "ronsj.dev",
+    "TURNSTILE_HOSTNAMES": "ronsj.dev,ronsj-dev.ronsj1.workers.dev",
   },
 }
