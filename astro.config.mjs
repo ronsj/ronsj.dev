@@ -4,6 +4,7 @@ import { defineConfig, fontProviders } from "astro/config";
 import cloudflare from "@astrojs/cloudflare";
 
 export default defineConfig({
+  site: "https://ronsj.dev",
   adapter: cloudflare(),
   vite: {
     plugins: [tailwindcss()],

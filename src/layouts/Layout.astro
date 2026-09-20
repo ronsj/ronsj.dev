@@ -1,13 +1,32 @@
 ---
 import { Font } from "astro:assets";
+import { contactLinks } from "../data/stages";
 import "../styles/global.css";
 
 interface Props {
   title: string;
   description: string;
+  /** Social share image, relative to the site root. 1200×630 works everywhere. */
+  image?: string;
 }
 
-const { title, description } = Astro.props;
+const SITE_NAME = "Ron San Jose";
+const AUTHOR = "Ron San Jose";
+
+const { title, description, image = "/og.png" } = Astro.props;
+// `site` is set in astro.config.mjs, so these resolve to absolute production URLs even in dev/preview.
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const imageUrl = new URL(image, Astro.site);
+
+const person = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: AUTHOR,
+  jobTitle: "Frontend developer",
+  url: Astro.site?.href,
+  image: imageUrl.href,
+  sameAs: contactLinks.map((l) => l.href),
+};
 ---
 
 <!doctype html>
@@ -15,13 +34,37 @@ const { title, description } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
     <meta name="description" content={description} />
+    <meta name="author" content={AUTHOR} />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href={canonical} />
     <meta name="theme-color" content="#f5f5f5" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${AUTHOR}, frontend developer`} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageUrl} />
+    <meta name="twitter:image:alt" content={`${AUTHOR}, frontend developer`} />
+
+    <script type="application/ld+json" set:html={JSON.stringify(person)} />
+
     <Font cssVariable="--font-manrope" preload />
     <Font cssVariable="--font-sora" preload />
     <Font cssVariable="--font-dm-mono" preload />
-    <title>{title}</title>
   </head>
   <body>
     <slot />
