@@ -1,8 +1,8 @@
-import { AxeBuilder } from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
-import { activeStage, scrollToStage } from "./helpers";
+import { AxeBuilder } from '@axe-core/playwright';
+import { expect, test, type Page } from '@playwright/test';
+import { activeStage, scrollToStage } from './helpers';
 
-const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"];
+const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'];
 
 /**
  * The decorative particle canvas sits behind all text, which makes axe report every
@@ -10,42 +10,42 @@ const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-prac
  * background, and fail if any contrast check still can't be determined.
  */
 async function audit(page: Page) {
-  await page.locator("[data-canvas]").evaluate((c: HTMLElement) => (c.style.visibility = "hidden"));
-  const results = await new AxeBuilder({ page }).withTags(TAGS).exclude("header").analyze();
+  await page.locator('[data-canvas]').evaluate((c: HTMLElement) => (c.style.visibility = 'hidden'));
+  const results = await new AxeBuilder({ page }).withTags(TAGS).exclude('header').analyze();
   expect(results.violations).toEqual([]);
-  expect(results.incomplete.filter((r) => r.id === "color-contrast")).toEqual([]);
+  expect(results.incomplete.filter((r) => r.id === 'color-contrast')).toEqual([]);
 
   // On narrow screens the header sits on a white-to-transparent gradient, which axe can't measure.
   // Its dark text has the least contrast against the page background at the transparent end, so
   // check that worst case by measuring with the gradient removed.
-  await page.locator("header").evaluate((h: HTMLElement) => (h.style.backgroundImage = "none"));
-  const header = await new AxeBuilder({ page }).withTags(TAGS).include("header").analyze();
+  await page.locator('header').evaluate((h: HTMLElement) => (h.style.backgroundImage = 'none'));
+  const header = await new AxeBuilder({ page }).withTags(TAGS).include('header').analyze();
   expect(header.violations).toEqual([]);
-  expect(header.incomplete.filter((r) => r.id === "color-contrast")).toEqual([]);
+  expect(header.incomplete.filter((r) => r.id === 'color-contrast')).toEqual([]);
 }
 
 for (const [stage, name] of [
-  [0, "intro"],
-  [5, "stack"],
-  [6, "contact"],
+  [0, 'intro'],
+  [4, 'skills'],
+  [5, 'contact'],
 ] as const) {
   test(`no axe violations on the ${name} stage`, async ({ page }) => {
-    await page.goto("/");
+    await page.goto('/');
     await scrollToStage(page, stage);
-    await expect(activeStage(page)).toHaveAttribute("aria-labelledby", `${name}-title`);
+    await expect(activeStage(page)).toHaveAttribute('aria-labelledby', `${name}-title`);
     // Let the text fade-in finish so axe measures final colours.
-    await expect(page.locator("[data-text]")).toHaveCSS("opacity", "1");
+    await expect(page.locator('[data-text]')).toHaveCSS('opacity', '1');
     await audit(page);
   });
 }
 
-test.describe("reduced motion", () => {
-  test.use({ reducedMotion: "reduce" });
+test.describe('reduced motion', () => {
+  test.use({ reducedMotion: 'reduce' });
 
-  test("swaps stages without waiting on the fade", async ({ page }) => {
-    await page.goto("/");
+  test('swaps stages without waiting on the fade', async ({ page }) => {
+    await page.goto('/');
     await scrollToStage(page, 1);
-    await expect(page.getByRole("heading", { name: "Pixels with purpose." })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Pixels with purpose.' })).toBeVisible();
     await audit(page);
   });
 });

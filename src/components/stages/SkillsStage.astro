@@ -1,0 +1,53 @@
+---
+import { skills } from "../../data/skills";
+import StageFrame from "./StageFrame.astro";
+
+interface Props {
+  active?: boolean;
+}
+const { active } = Astro.props;
+---
+
+<StageFrame id={skills.id} shape="layers" kicker={skills.kicker} title={skills.title} {active}>
+  <p class="max-w-[46ch] text-[clamp(18px,1.6vw,22px)] leading-[1.45] text-pretty text-body">{skills.body}</p>
+  <dl class="mt-[18px] flex flex-col gap-3">
+    {
+      skills.groups.map((g) => (
+        <div class="flex flex-col gap-1.5 border-t border-rule pt-2 sm:flex-row sm:gap-3.5">
+          <dt
+            id={`${skills.id}-${g.name.toLowerCase()}`}
+            class="w-20 shrink-0 font-mono text-[15px] font-medium text-accent-text sm:pt-0.5"
+          >
+            {g.name}
+          </dt>
+          <dd class="m-0 min-w-0">
+            {/* Phones: one row that scrolls sideways, bleeding into the page gutter so it reads as scrollable. */}
+            <ul
+              tabindex="0"
+              data-drag-scroll
+              aria-labelledby={`${skills.id}-${g.name.toLowerCase()}`}
+              class:list={[
+                "flex gap-1.5 overflow-x-auto overscroll-x-contain rounded-xs",
+                "-mx-[clamp(20px,5vw,64px)] px-[clamp(20px,5vw,64px)] py-0.5 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0",
+                // Mouse users can drag the row too (see scripts/drag-scroll.ts); touch scrolls natively.
+                "cursor-grab data-[dragging]:cursor-grabbing data-[dragging]:select-none sm:cursor-auto",
+              ]}
+            >
+              {g.items.map((item) => (
+                <li class="flex h-6 shrink-0 items-center rounded-md border border-rule bg-white/60 px-2.5 font-mono text-xs whitespace-nowrap text-body">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </dd>
+        </div>
+      ))
+    }
+  </dl>
+</StageFrame>
+
+<script>
+  import { initDragScroll } from '../../scripts/drag-scroll';
+
+  initDragScroll(document);
+</script>
