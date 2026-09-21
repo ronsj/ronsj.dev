@@ -1,13 +1,13 @@
-import { ActionError } from "astro:actions";
-import { env } from "cloudflare:workers";
+import { ActionError } from 'astro:actions';
+import { env } from 'cloudflare:workers';
 
-const SITEVERIFY = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+const SITEVERIFY = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
 interface SiteverifyResult {
   success: boolean;
   action?: string;
   hostname?: string;
-  "error-codes"?: string[];
+  'error-codes'?: string[];
   metadata?: { result_with_testing_key?: boolean };
 }
 
@@ -17,7 +17,7 @@ interface SiteverifyResult {
  */
 const fail = () =>
   new ActionError({
-    code: "FORBIDDEN",
+    code: 'FORBIDDEN',
     message: "The verification didn't pass. Please try again.",
   });
 
@@ -29,8 +29,8 @@ export async function requireTurnstile(
   if (!token) throw fail();
 
   const expectedHostnames = new Set(
-    (env.TURNSTILE_HOSTNAMES ?? "")
-      .split(",")
+    (env.TURNSTILE_HOSTNAMES ?? '')
+      .split(',')
       .map((hostname) => hostname.trim())
       .filter(Boolean),
   );
@@ -38,9 +38,9 @@ export async function requireTurnstile(
   // The secret is a Worker secret, not a var, so a deploy can go out without it. Fail loudly instead
   // of letting siteverify answer "missing-input-secret", which would look like every visitor is a bot.
   if (!env.TURNSTILE_SECRET) {
-    console.error("Turnstile: TURNSTILE_SECRET is not set");
+    console.error('Turnstile: TURNSTILE_SECRET is not set');
     throw new ActionError({
-      code: "INTERNAL_SERVER_ERROR",
+      code: 'INTERNAL_SERVER_ERROR',
       message: "Sorry, the contact form isn't configured correctly. Please try again later.",
     });
   }
@@ -48,16 +48,16 @@ export async function requireTurnstile(
   let result: SiteverifyResult;
   try {
     const response = await fetch(SITEVERIFY, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ secret: env.TURNSTILE_SECRET, response: token, remoteip }),
     });
     if (!response.ok) throw new Error(`siteverify ${response.status}`);
     result = (await response.json()) as SiteverifyResult;
   } catch (cause) {
-    console.error("Turnstile: siteverify request failed", cause);
+    console.error('Turnstile: siteverify request failed', cause);
     throw new ActionError({
-      code: "INTERNAL_SERVER_ERROR",
+      code: 'INTERNAL_SERVER_ERROR',
       message: "Sorry, the verification service isn't responding. Please try again in a moment.",
     });
   }
@@ -69,8 +69,8 @@ export async function requireTurnstile(
   const hostnameOk =
     expectedHostnames.size === 0 || (!!result.hostname && expectedHostnames.has(result.hostname));
   if (!result.success || !actionOk || !hostnameOk) {
-    console.warn("Turnstile: rejected", {
-      codes: result["error-codes"],
+    console.warn('Turnstile: rejected', {
+      codes: result['error-codes'],
       action: result.action,
       hostname: result.hostname,
     });

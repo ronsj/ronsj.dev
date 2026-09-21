@@ -1,53 +1,53 @@
-import { ActionError, defineAction } from "astro:actions";
-import { z } from "astro/zod";
-import { env } from "cloudflare:workers";
-import { requireTurnstile } from "./turnstile";
+import { ActionError, defineAction } from 'astro:actions';
+import { z } from 'astro/zod';
+import { env } from 'cloudflare:workers';
+import { requireTurnstile } from './turnstile';
 
 export const server = {
   sendEmail: defineAction({
-    accept: "form",
+    accept: 'form',
     input: z.object({
       // Empty form fields arrive as null, so the type error carries the same wording as the empty check.
       name: z
-        .string("Please tell me your name.")
+        .string('Please tell me your name.')
         .trim()
-        .min(1, "Please tell me your name.")
-        .max(200, "That name is too long."),
+        .min(1, 'Please tell me your name.')
+        .max(200, 'That name is too long.'),
       email: z
-        .email("Please enter a valid email address.")
+        .email('Please enter a valid email address.')
         .trim()
-        .max(320, "That email address is too long."),
+        .max(320, 'That email address is too long.'),
       message: z
-        .string("Please write a message.")
+        .string('Please write a message.')
         .trim()
-        .min(1, "Please write a message.")
-        .max(5000, "Please keep your message under 5,000 characters."),
+        .min(1, 'Please write a message.')
+        .max(5000, 'Please keep your message under 5,000 characters.'),
       // Honeypot: hidden from people, filled in by bots. Anything here means we quietly drop the mail.
       company: z.string().nullish(),
       // Turnstile token, injected into the form by the widget.
-      "cf-turnstile-response": z.string().nullish(),
+      'cf-turnstile-response': z.string().nullish(),
     }),
-    handler: async ({ name, email, message, company, "cf-turnstile-response": token }, context) => {
+    handler: async ({ name, email, message, company, 'cf-turnstile-response': token }, context) => {
       // Drop honeypot hits before Turnstile so bots get the same quiet success either way and we
       // don't spend a siteverify round trip on them.
       if (company) return { ok: true };
       await requireTurnstile(
         token,
-        "contact",
-        context.request.headers.get("CF-Connecting-IP") ?? undefined,
+        'contact',
+        context.request.headers.get('CF-Connecting-IP') ?? undefined,
       );
       try {
         await env.EMAIL.send({
-          from: { name: "ronsj.dev contact form", email: env.CONTACT_FROM },
+          from: { name: 'ronsj.dev contact form', email: env.CONTACT_FROM },
           to: env.CONTACT_TO,
           replyTo: { name, email },
           subject: `Portfolio message from ${name}`,
           text: `From: ${name} <${email}>\n\n${message}`,
         });
       } catch (cause) {
-        console.error("Contact form: email send failed", cause);
+        console.error('Contact form: email send failed', cause);
         throw new ActionError({
-          code: "INTERNAL_SERVER_ERROR",
+          code: 'INTERNAL_SERVER_ERROR',
           message: "Sorry, your message couldn't be sent right now. Please try again in a moment.",
         });
       }

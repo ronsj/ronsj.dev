@@ -1,4 +1,6 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "ignorePatterns": ["dist", ".astro", "pnpm-lock.yaml", "playwright-report", "test-results"]
+  "ignorePatterns": ["dist", ".astro", "pnpm-lock.yaml", "playwright-report", "test-results"],
+  "singleQuote": true,
+  "sortTailwindcss": true
 }

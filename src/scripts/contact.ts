@@ -1,4 +1,4 @@
-import { actions, isInputError } from "astro:actions";
+import { actions, isInputError } from 'astro:actions';
 
 /** The subset of the Turnstile client API we use. Loaded on demand from challenges.cloudflare.com. */
 interface Turnstile {
@@ -9,11 +9,11 @@ interface Turnstile {
 interface TurnstileOptions {
   sitekey: string;
   action: string;
-  size: "normal" | "flexible" | "compact";
-  theme: "auto" | "light" | "dark";
+  size: 'normal' | 'flexible' | 'compact';
+  theme: 'auto' | 'light' | 'dark';
   callback: (token: string) => void;
-  "expired-callback": () => void;
-  "error-callback": () => void;
+  'expired-callback': () => void;
+  'error-callback': () => void;
 }
 declare global {
   interface Window {
@@ -21,21 +21,21 @@ declare global {
   }
 }
 
-const TURNSTILE_SRC = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+const TURNSTILE_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 let turnstileLoading: Promise<Turnstile> | null = null;
 
 /** Injects the Turnstile script the first time it's needed, so visitors who never open the form don't load it. */
 function loadTurnstile(): Promise<Turnstile> {
   if (window.turnstile) return Promise.resolve(window.turnstile);
   turnstileLoading ??= new Promise((resolve, reject) => {
-    const script = document.createElement("script");
+    const script = document.createElement('script');
     script.src = TURNSTILE_SRC;
     script.async = true;
-    script.addEventListener("load", () => {
+    script.addEventListener('load', () => {
       if (window.turnstile) resolve(window.turnstile);
-      else reject(new Error("Turnstile failed to initialise"));
+      else reject(new Error('Turnstile failed to initialise'));
     });
-    script.addEventListener("error", () => reject(new Error("Turnstile failed to load")));
+    script.addEventListener('error', () => reject(new Error('Turnstile failed to load')));
     document.head.appendChild(script);
   });
   return turnstileLoading;
@@ -43,35 +43,35 @@ function loadTurnstile(): Promise<Turnstile> {
 
 /** Wires the "Email" button to the contact dialog and submits the form through the sendEmail action. */
 export function initContactForm(root: HTMLElement) {
-  const dialog = root.querySelector<HTMLDialogElement>("[data-email-dialog]");
-  const openers = [...root.querySelectorAll<HTMLElement>("[data-email-open]")];
-  if (!dialog || openers.length === 0 || typeof dialog.showModal !== "function") return;
+  const dialog = root.querySelector<HTMLDialogElement>('[data-email-dialog]');
+  const openers = [...root.querySelectorAll<HTMLElement>('[data-email-open]')];
+  if (!dialog || openers.length === 0 || typeof dialog.showModal !== 'function') return;
 
-  const form = dialog.querySelector<HTMLFormElement>("[data-email-form]");
-  const status = dialog.querySelector<HTMLElement>("[data-email-status]");
-  const success = dialog.querySelector<HTMLElement>("[data-email-success]");
+  const form = dialog.querySelector<HTMLFormElement>('[data-email-form]');
+  const status = dialog.querySelector<HTMLElement>('[data-email-status]');
+  const success = dialog.querySelector<HTMLElement>('[data-email-success]');
   const submit = dialog.querySelector<HTMLButtonElement>('[data-email-form] button[type="submit"]');
-  const widgetHost = dialog.querySelector<HTMLElement>("[data-turnstile]");
+  const widgetHost = dialog.querySelector<HTMLElement>('[data-turnstile]');
   if (!form || !status || !success || !submit || !widgetHost) return;
 
-  const fields = ["name", "email", "message"] as const;
+  const fields = ['name', 'email', 'message'] as const;
   const input = (name: string) => form.elements.namedItem(name) as HTMLInputElement | null;
   const errorEl = (name: string) => dialog.querySelector<HTMLElement>(`[data-error-for="${name}"]`);
 
   const clearErrors = () => {
     for (const name of fields) {
-      input(name)?.removeAttribute("aria-invalid");
+      input(name)?.removeAttribute('aria-invalid');
       const el = errorEl(name);
       if (el) {
-        el.textContent = "";
+        el.textContent = '';
         el.hidden = true;
       }
     }
-    status.textContent = "";
+    status.textContent = '';
   };
 
   const showError = (name: string, message: string) => {
-    input(name)?.setAttribute("aria-invalid", "true");
+    input(name)?.setAttribute('aria-invalid', 'true');
     const el = errorEl(name);
     if (el) {
       el.textContent = message;
@@ -97,16 +97,16 @@ export function initContactForm(root: HTMLElement) {
     try {
       turnstile = await loadTurnstile();
       widgetId = turnstile.render(widgetHost, {
-        sitekey: widgetHost.dataset.sitekey ?? "",
-        action: "contact",
-        size: "flexible",
-        theme: "light",
+        sitekey: widgetHost.dataset.sitekey ?? '',
+        action: 'contact',
+        size: 'flexible',
+        theme: 'light',
         callback: () => setVerified(true),
-        "expired-callback": () => {
+        'expired-callback': () => {
           setVerified(false);
-          status.textContent = "The verification expired. Please complete it again.";
+          status.textContent = 'The verification expired. Please complete it again.';
         },
-        "error-callback": () => {
+        'error-callback': () => {
           setVerified(false);
           status.textContent = "The verification couldn't load. Please try again later.";
         },
@@ -123,33 +123,33 @@ export function initContactForm(root: HTMLElement) {
     setVerified(verified);
     dialog.showModal();
     // showModal() focuses the first focusable element, which is the close button; start on the form.
-    input("name")?.focus();
+    input('name')?.focus();
     // The page behind is scroll-driven, so freeze it while the dialog is up.
-    document.documentElement.style.overflow = "hidden";
+    document.documentElement.style.overflow = 'hidden';
     void mountWidget();
   };
 
-  for (const opener of openers) opener.addEventListener("click", open);
-  for (const closer of dialog.querySelectorAll("[data-email-close]")) {
-    closer.addEventListener("click", () => dialog.close());
+  for (const opener of openers) opener.addEventListener('click', open);
+  for (const closer of dialog.querySelectorAll('[data-email-close]')) {
+    closer.addEventListener('click', () => dialog.close());
   }
   // A click on the backdrop lands on the dialog element itself, not its children.
-  dialog.addEventListener("click", (e) => {
+  dialog.addEventListener('click', (e) => {
     if (e.target === dialog) dialog.close();
   });
-  dialog.addEventListener("close", () => {
-    document.documentElement.style.overflow = "";
+  dialog.addEventListener('close', () => {
+    document.documentElement.style.overflow = '';
   });
 
-  form.addEventListener("submit", async (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!form.reportValidity()) return;
     if (!verified) {
-      status.textContent = "Please wait for the verification to finish.";
+      status.textContent = 'Please wait for the verification to finish.';
       return;
     }
     clearErrors();
-    status.textContent = "Sending…";
+    status.textContent = 'Sending…';
     submit.disabled = true;
 
     const { error } = await actions.sendEmail(new FormData(form));
@@ -160,14 +160,14 @@ export function initContactForm(root: HTMLElement) {
       form.reset();
       form.hidden = true;
       success.hidden = false;
-      success.querySelector<HTMLElement>("[data-email-close]")?.focus();
+      success.querySelector<HTMLElement>('[data-email-close]')?.focus();
       return;
     }
     if (isInputError(error)) {
       for (const [name, messages] of Object.entries(error.fields)) {
-        if (messages?.length) showError(name, messages.join(" "));
+        if (messages?.length) showError(name, messages.join(' '));
       }
-      status.textContent = "Please check the highlighted fields.";
+      status.textContent = 'Please check the highlighted fields.';
       dialog.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
       return;
     }
