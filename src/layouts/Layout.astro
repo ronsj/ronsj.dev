@@ -1,6 +1,6 @@
 ---
 import { Font } from "astro:assets";
-import { contactLinks } from "../data/stages";
+import { contact } from "../data/contact";
 import "../styles/global.css";
 
 interface Props {
@@ -25,7 +25,7 @@ const person = {
   jobTitle: "Frontend developer",
   url: Astro.site?.href,
   image: imageUrl.href,
-  sameAs: contactLinks.map((l) => l.href),
+  sameAs: contact.links.map((l) => l.href),
 };
 ---
 

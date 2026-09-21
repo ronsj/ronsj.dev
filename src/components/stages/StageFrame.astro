@@ -1,0 +1,66 @@
+---
+import type { ShapeName } from "../../scripts/shapes";
+
+/**
+ * The shell every stage shares: the `data-stage` section the scroll script toggles, the kicker and
+ * the optically aligned heading. What goes under the heading is up to each stage (the slot).
+ */
+interface Props {
+  id: string;
+  /** The shape the particle field settles into while this stage is showing. */
+  shape: ShapeName;
+  kicker: string;
+  title: string;
+  /** Only the first stage on the page should be an h1. */
+  level?: "h1" | "h2";
+  /** Size/wrap classes for the heading; the default suits a multi-word title. */
+  titleClass?: string;
+  /** Whether this stage is the one showing before the scroll script runs. */
+  active?: boolean;
+}
+
+const {
+  id,
+  shape,
+  kicker,
+  title,
+  level: Heading = "h2",
+  titleClass = "text-[clamp(44px,7vw,96px)] text-balance",
+  active = false,
+} = Astro.props;
+const titleId = `${id}-title`;
+
+/**
+ * Left side bearing of each heading's first glyph in Sora ExtraBold, in em (measured via canvas
+ * `measureText`). Pulling the heading left by this much lines its ink up with the text below it.
+ */
+const bearings: Record<string, number> = { R: 0.074, P: 0.074, T: 0.02, S: 0.022, D: 0.074, I: 0.076, L: 0.074, K: 0.074 };
+// Pulling by the full bearing reads as too far left, so use 80% of it.
+const OPTICAL_FACTOR = 0.8;
+const opticalOffset = `margin-left: -${((bearings[title[0] ?? ""] ?? 0) * OPTICAL_FACTOR).toFixed(4)}em`;
+---
+
+<section data-stage data-shape={shape} data-active={active ? "" : undefined} aria-labelledby={titleId}>
+  <p class="mb-[18px] ml-2 flex items-center gap-3 text-sm font-medium tracking-[0.18em] text-accent-text uppercase">
+    <svg aria-hidden="true" width="32" height="10" viewBox="0 0 32 10" fill="none" class="block flex-none">
+      <path
+        d="M1 6.5C5 1.5 9 1.5 13 5s8 3.5 12 -1.5"
+        stroke="currentColor"
+        stroke-width="2.2"
+        stroke-linecap="round"
+      />
+    </svg>
+    {kicker}
+  </p>
+  <Heading
+    id={titleId}
+    style={opticalOffset}
+    class:list={[
+      "mb-[22px] font-display leading-[0.85] font-extrabold tracking-[-0.02em] text-box-cap",
+      titleClass,
+    ]}
+  >
+    {title}
+  </Heading>
+  <slot />
+</section>

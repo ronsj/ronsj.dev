@@ -1,0 +1,33 @@
+---
+import { contact } from "../../data/contact";
+import StageFrame from "./StageFrame.astro";
+
+interface Props {
+  active?: boolean;
+}
+const { active } = Astro.props;
+---
+
+<StageFrame id={contact.id} shape="galaxy" kicker={contact.kicker} title={contact.title} {active}>
+  <p class="max-w-[46ch] text-[clamp(18px,1.6vw,22px)] leading-[1.45] text-pretty text-body">{contact.body}</p>
+  <ul class="mt-7 flex flex-col gap-x-[26px] gap-y-3.5 text-[19px] sm:flex-row sm:flex-wrap">
+    {
+      contact.links.map((l) => (
+        <li>
+          <a
+            href={l.href}
+            class="link-underline"
+            {...(l.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+          >
+            {l.label}
+            {l.external && <span class="sr-only"> (opens in a new tab)</span>}
+          </a>
+        </li>
+      ))
+    }
+    <li>
+      {/* Opens the email dialog that ParticleStory renders; wired up by scripts/contact.ts. */}
+      <button type="button" data-email-open class="link-underline cursor-pointer">Email</button>
+    </li>
+  </ul>
+</StageFrame>

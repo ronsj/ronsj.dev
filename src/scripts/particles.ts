@@ -1,14 +1,14 @@
-import { buildShapes, type ShapeSet } from "./shapes";
+import { buildShapes, type ShapeName, type ShapeSet } from './shapes';
 
 export interface ParticleOptions {
+  /** The resting shape of each stage, in scroll order. */
+  shapes: readonly ShapeName[];
   count?: number;
   rotationSpeed?: number;
   color?: string;
   reducedMotion?: boolean;
 }
 
-/** Index of the solar-system shape, which is shown tilted on its axis. */
-const ORBITS_SHAPE = 2;
 /** Roll applied to the solar system after it spins, so it turns about its own tilted axis (radians). */
 const ORBITS_ROLL = -0.42;
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
@@ -28,6 +28,10 @@ export class ParticleField {
   private readonly color: string;
   private readonly reduced: boolean;
   private readonly set: ShapeSet;
+  /** Index of the solar system, which is shown tilted on its axis (-1 if no stage uses it). */
+  private readonly orbitsAt: number;
+  /** Index of the hero cloud, which is bigger than the other shapes (-1 if no stage uses it). */
+  private readonly cloudAt: number;
   private readonly px: Float32Array;
   private readonly py: Float32Array;
   private readonly pz: Float32Array;
@@ -41,16 +45,18 @@ export class ParticleField {
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
-    opts: ParticleOptions = {},
+    opts: ParticleOptions,
   ) {
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("2D canvas unavailable");
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('2D canvas unavailable');
     this.ctx = ctx;
     this.n = Math.max(500, Math.min(12000, opts.count ?? 5000));
     this.spin = opts.rotationSpeed ?? 1;
-    this.color = opts.color ?? "#2f6fdd";
+    this.color = opts.color ?? '#2f6fdd';
     this.reduced = opts.reducedMotion ?? false;
-    this.set = buildShapes(this.n);
+    this.set = buildShapes(this.n, opts.shapes);
+    this.orbitsAt = opts.shapes.indexOf('orbits');
+    this.cloudAt = opts.shapes.indexOf('cloud');
     this.px = new Float32Array(this.n);
     this.py = new Float32Array(this.n);
     this.pz = new Float32Array(this.n);
@@ -119,7 +125,7 @@ export class ParticleField {
     const c2 = Math.cos(ax);
     const s2 = Math.sin(ax);
     // Ease the tilt in and out as the solar system morphs from and into its neighbours.
-    const rollW = i0 === ORBITS_SHAPE ? 1 - t : i1 === ORBITS_SHAPE ? t : 0;
+    const rollW = i0 === this.orbitsAt ? 1 - t : i1 === this.orbitsAt ? t : 0;
     const c3 = Math.cos(ORBITS_ROLL * rollW);
     const s3 = Math.sin(ORBITS_ROLL * rollW);
 
@@ -133,7 +139,7 @@ export class ParticleField {
     const fade = W >= 1024 ? 0.6 : W >= 768 ? 0.4 : 0.2;
     // The hero cloud is bigger than the other shapes, so zoom out in proportion to how much of it is
     // on screen. This stays continuous whichever direction we morph, including nav jumps.
-    const cloudW = (i0 === 0 ? 1 - t : 0) + (i1 === 0 ? t : 0);
+    const cloudW = (i0 === this.cloudAt ? 1 - t : 0) + (i1 === this.cloudAt ? t : 0);
     const cloudR = 1.1 + cloudW;
     const half = wide ? (W - textEdge) / 2 - 24 : W * 0.46;
     const fit = Math.max(1.3, cloudR);

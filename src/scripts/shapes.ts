@@ -197,6 +197,17 @@ function scatter(n: number): Shape {
   });
 }
 
+/** Every shape a stage can rest on. Each stage names its own via `data-shape`. */
+const builders = { cloud, sphere, orbits, helix, wave, layers, galaxy } satisfies Record<
+  string,
+  (n: number) => Shape
+>;
+
+export type ShapeName = keyof typeof builders;
+
+export const isShapeName = (v: unknown): v is ShapeName =>
+  typeof v === 'string' && Object.hasOwn(builders, v);
+
 export interface ShapeSet {
   /** One target shape per content stage, in order. */
   shapes: Shape[];
@@ -204,9 +215,9 @@ export interface ShapeSet {
   seeds: Shape;
 }
 
-export function buildShapes(n: number): ShapeSet {
+export function buildShapes(n: number, names: readonly ShapeName[]): ShapeSet {
   return {
-    shapes: [cloud(n), sphere(n), orbits(n), helix(n), wave(n), layers(n), galaxy(n)],
+    shapes: names.map((name) => builders[name](n)),
     scatter: scatter(n),
     seeds: make(n, () => [Math.random(), Math.random(), Math.random()]),
   };
