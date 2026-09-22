@@ -3,8 +3,7 @@ import { skills } from "../../data/skills";
 import SectionFrame from "./SectionFrame.astro";
 ---
 
-<SectionFrame id={skills.id} shape="layers" kicker={skills.kicker} title={skills.title}>
-  <p class="max-w-[46ch] text-[clamp(18px,1.6vw,22px)] leading-[1.45] text-pretty text-body">{skills.body}</p>
+<SectionFrame id={skills.id} shape="layers" kicker={skills.kicker} title={skills.title} body={skills.body}>
   <dl class="mt-[18px] flex flex-col gap-3">
     {
       skills.groups.map((g) => (

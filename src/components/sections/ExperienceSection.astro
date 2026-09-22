@@ -3,10 +3,7 @@ import { experience } from "../../data/experience";
 import SectionFrame from "./SectionFrame.astro";
 ---
 
-<SectionFrame id={experience.id} shape="helix" kicker={experience.kicker} title={experience.title}>
-  <p class="max-w-[46ch] text-[clamp(18px,1.6vw,22px)] leading-[1.45] text-pretty text-body">
-    {experience.body}
-  </p>
+<SectionFrame id={experience.id} shape="helix" kicker={experience.kicker} title={experience.title} body={experience.body}>
   <ul class="mt-5 flex flex-col gap-2">
     {
       experience.roles.map((r) => (

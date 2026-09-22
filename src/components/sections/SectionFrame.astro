@@ -3,7 +3,8 @@ import type { ShapeName } from "../../scripts/shapes";
 
 /**
  * The shell every section shares: a full-height `data-section` section the scroll script watches, the
- * kicker and the optically aligned heading. What goes under the heading is up to each section (the slot).
+ * kicker, the optically aligned heading and the body paragraph. Anything after that is up to each
+ * section (the slot).
  */
 interface Props {
   /** Anchor id the nav jumps to. */
@@ -12,6 +13,8 @@ interface Props {
   shape: ShapeName;
   kicker: string;
   title: string;
+  /** The paragraph under the heading. */
+  body?: string;
   /** Only the first section on the page should be an h1. */
   level?: "h1" | "h2";
   /** Size/wrap classes for the heading; the default suits a multi-word title. */
@@ -23,6 +26,7 @@ const {
   shape,
   kicker,
   title,
+  body,
   level: Heading = "h2",
   titleClass = "text-[clamp(44px,7vw,96px)] text-balance",
 } = Astro.props;
@@ -67,5 +71,6 @@ const opticalOffset = `margin-left: -${((bearings[title[0] ?? ""] ?? 0) * OPTICA
   >
     {title}
   </Heading>
+  {body && <p class="max-w-[46ch] text-[clamp(18px,1.6vw,22px)] leading-[1.45] text-pretty text-body">{body}</p>}
   <slot />
 </section>

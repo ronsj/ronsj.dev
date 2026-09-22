@@ -4,8 +4,7 @@ import ProjectAccordion from "../ProjectAccordion";
 import SectionFrame from "./SectionFrame.astro";
 ---
 
-<SectionFrame id={work.id} shape="orbits" kicker={work.kicker} title={work.title}>
-  <p class="max-w-[46ch] text-[clamp(18px,1.6vw,22px)] leading-[1.45] text-pretty text-body">{work.body}</p>
+<SectionFrame id={work.id} shape="orbits" kicker={work.kicker} title={work.title} body={work.body}>
   {/* Hydrates once the section scrolls near; until then it renders closed, with every description still in the markup. */}
   <ProjectAccordion client:visible projects={work.projects} />
 </SectionFrame>
