@@ -34,8 +34,8 @@ export const experience: Experience = {
     },
     {
       years: '2016–2022',
-      title: 'Frontend Engineer/Supervisor',
-      company: 'Einstein Industries',
+      title: 'Frontend Supervisor',
+      company: 'Einstein',
       companyUrl: 'https://einsteinindustries.com',
     },
   ],
