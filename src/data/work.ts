@@ -26,21 +26,21 @@ export const work: Work = {
       url: 'https://peets.com',
       summary: 'Subscription onboarding development',
       description:
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+        'I built theme sections across the storefront, from landing pages for subscriptions with custom subscription configurators to the interactive product listing pages: carousels, product grids and filters with pagination. I also built the main product configurator, which brings one-time and subscription purchases together in a single flow. On top of that I worked on the cart and its upsells.',
     },
     {
       name: 'SYRN',
       url: 'https://syrn.com',
       summary: 'Initial Shopify theme implementation',
       description:
-        'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.',
+        'SYRN was a brand new brand launching its first online store, and I scaffolded the project from day one: the Shopify theme itself and the developer tooling around it, from Vite to linting, formatting and testing. I also set up the store backend, modelling the content with metafields and metaobjects. From there I built the initial home page and product page sections, including a set brought to life with GSAP animations.',
     },
     {
       name: 'Barnes & Noble',
       url: 'https://barnesandnoble.com',
-      summary: 'Headless Shopify theme development',
+      summary: 'Headless Shopify theme & CMS development',
       description:
-        'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti. Quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit.',
+        'Barnes & Noble, one of the largest e-commerce brands in the world, moved its online store to headless Shopify with Sanity as the CMS, and I worked on that store and content migration. I integrated content from Sanity into Shopify sections, so the storefront could draw on both. I also worked on the product page configurator.',
     },
   ],
 };

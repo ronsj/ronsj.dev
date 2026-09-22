@@ -23,7 +23,7 @@ test('each project expands to its description and closes the one before', async 
   await expect(peets).toHaveAttribute('aria-expanded', 'true');
   const panel = page.locator(`#${await peets.getAttribute('aria-controls')}`);
   await expect(panel).not.toHaveAttribute('inert');
-  await expect(panel.getByText(/Lorem ipsum dolor sit amet/)).toBeVisible();
+  await expect(panel.getByText(/I built theme sections/)).toBeVisible();
   const visit = panel.getByRole('link', { name: /Visit Peet's Coffee/ });
   await expect(visit).toHaveAttribute('href', 'https://peets.com');
   await expect(visit).toHaveAttribute('rel', 'noopener noreferrer');
@@ -31,7 +31,7 @@ test('each project expands to its description and closes the one before', async 
   await syrn.click();
   await expect(syrn).toHaveAttribute('aria-expanded', 'true');
   await expect(peets).toHaveAttribute('aria-expanded', 'false');
-  await expect(panel.getByText(/Lorem ipsum dolor sit amet/)).toBeHidden();
+  await expect(panel.getByText(/I built theme sections/)).toBeHidden();
 
   await syrn.click();
   await expect(syrn).toHaveAttribute('aria-expanded', 'false');
