@@ -43,7 +43,8 @@ const opticalOffset = `margin-left: -${((bearings[title[0] ?? ""] ?? 0) * OPTICA
   data-section
   data-shape={shape}
   aria-labelledby={titleId}
-  class="flex min-h-svh flex-col justify-center pt-24 pb-20"
+  tabindex="-1"
+  class="flex min-h-svh flex-col justify-center pt-24 pb-20 outline-none"
 >
   <p class="mb-[18px] ml-2 flex items-center gap-3 text-sm md:text-lg font-bold md:font-medium tracking-[0.08em] md:tracking-[0.18em] text-accent-text uppercase">
     <svg aria-hidden="true" width="32" height="10" viewBox="0 0 32 10" fill="none" class="block flex-none">

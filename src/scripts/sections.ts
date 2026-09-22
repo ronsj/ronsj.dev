@@ -111,8 +111,13 @@ export function initSections(root: HTMLElement) {
     if (!link) return;
     const i = sections.findIndex((el) => `#${el.id}` === link.hash);
     if (i < 0) return;
+    // Leave modified clicks (open in new tab, etc.) to the browser.
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)
+      return;
     e.preventDefault();
     history.replaceState(null, '', link.hash);
+    // A native anchor jump moves the tab-order start point to the target; do the same for ours.
+    sections[i]!.focus({ preventScroll: true });
     scrollToSection(i);
   });
 
