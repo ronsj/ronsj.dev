@@ -44,8 +44,14 @@ test('the page carries the SEO and social metadata', async ({ page, request, bas
   expect(icon.headers()['content-type']).toContain('image/png');
 
   const ld = await page.locator('head script[type="application/ld+json"]').textContent();
-  const person = JSON.parse(ld ?? '{}');
-  expect(person['@type']).toBe('Person');
+  const graph: Record<string, any>[] = JSON.parse(ld ?? '{}')['@graph'];
+  const node = (type: string) => graph.find((n) => n['@type'] === type)!;
+  const [profile, website, person] = [node('ProfilePage'), node('WebSite'), node('Person')];
   expect(person.name).toBe('Ron San Jose');
   expect(person.sameAs).toContain('https://github.com/ronsj');
+  expect(person.knowsAbout).toContain('Astro');
+  // The page is about the person, and the site is theirs: both must point at the same node.
+  expect(profile.mainEntity['@id']).toBe(person['@id']);
+  expect(profile.isPartOf['@id']).toBe(website['@id']);
+  expect(website.author['@id']).toBe(person['@id']);
 });

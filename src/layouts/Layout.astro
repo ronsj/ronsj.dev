@@ -1,6 +1,7 @@
 ---
 import { Font } from "astro:assets";
 import { contact } from "../data/contact";
+import { skills } from "../data/skills";
 import "../styles/global.css";
 
 interface Props {
@@ -18,14 +19,41 @@ const { title, description, image = "/og.png" } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const imageUrl = new URL(image, Astro.site);
 
-const person = {
+// One graph, three linked nodes: the page is a profile of the person, and the site is authored by
+// them. `@id`s let Google resolve all three to the same entity instead of guessing from the title.
+const personId = new URL("#person", Astro.site).href;
+const websiteId = new URL("#website", Astro.site).href;
+const structuredData = {
   "@context": "https://schema.org",
-  "@type": "Person",
-  name: AUTHOR,
-  jobTitle: "Frontend and fullstack developer",
-  url: Astro.site?.href,
-  image: imageUrl.href,
-  sameAs: contact.links.map((l) => l.href),
+  "@graph": [
+    {
+      "@type": "ProfilePage",
+      "@id": canonical.href,
+      url: canonical.href,
+      name: title,
+      description,
+      isPartOf: { "@id": websiteId },
+      mainEntity: { "@id": personId },
+    },
+    {
+      "@type": "WebSite",
+      "@id": websiteId,
+      url: Astro.site?.href,
+      name: SITE_NAME,
+      author: { "@id": personId },
+    },
+    {
+      "@type": "Person",
+      "@id": personId,
+      name: AUTHOR,
+      jobTitle: "Frontend and fullstack developer",
+      description,
+      url: Astro.site?.href,
+      image: imageUrl.href,
+      sameAs: contact.links.map((l) => l.href),
+      knowsAbout: skills.groups.flatMap((g) => g.items),
+    },
+  ],
 };
 ---
 
@@ -63,7 +91,7 @@ const person = {
     <meta name="twitter:image" content={imageUrl} />
     <meta name="twitter:image:alt" content={`${AUTHOR}, fullstack developer`} />
 
-    <script type="application/ld+json" set:html={JSON.stringify(person)} />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
 
     {/* Set the theme before first paint so a stored choice doesn't flash the other theme. Inline on purpose; scripts/theme.ts takes over from here. */}
     <script is:inline>
