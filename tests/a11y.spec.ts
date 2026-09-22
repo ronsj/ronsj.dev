@@ -1,6 +1,6 @@
 import { AxeBuilder } from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { activeStage, scrollToStage } from './helpers';
+import { scrollToStage, story } from './helpers';
 
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'];
 
@@ -11,7 +11,22 @@ const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-prac
  */
 async function audit(page: Page) {
   await page.locator('[data-canvas]').evaluate((c: HTMLElement) => (c.style.visibility = 'hidden'));
-  const results = await new AxeBuilder({ page }).withTags(TAGS).exclude('header').analyze();
+  // Chips scrolled past the edge of a horizontal skills row are clipped by the row, so axe can't tell
+  // what's behind them and reports them as unmeasurable. They share the visible chips' styles, so skip them.
+  await page.evaluate(() => {
+    for (const row of document.querySelectorAll<HTMLElement>('[data-drag-scroll]')) {
+      const box = row.getBoundingClientRect();
+      for (const chip of row.children) {
+        const r = chip.getBoundingClientRect();
+        if (r.left < box.left || r.right > box.right) chip.setAttribute('data-axe-skip', '');
+      }
+    }
+  });
+  const results = await new AxeBuilder({ page })
+    .withTags(TAGS)
+    .exclude('header')
+    .exclude('[data-axe-skip]')
+    .analyze();
   expect(results.violations).toEqual([]);
   expect(results.incomplete.filter((r) => r.id === 'color-contrast')).toEqual([]);
 
@@ -29,12 +44,10 @@ for (const [stage, name] of [
   [4, 'skills'],
   [5, 'contact'],
 ] as const) {
-  test(`no axe violations on the ${name} stage`, async ({ page }) => {
+  test(`no axe violations with the ${name} section on screen`, async ({ page }) => {
     await page.goto('/');
     await scrollToStage(page, stage);
-    await expect(activeStage(page)).toHaveAttribute('aria-labelledby', `${name}-title`);
-    // Let the text fade-in finish so axe measures final colours.
-    await expect(page.locator('[data-text]')).toHaveCSS('opacity', '1');
+    await expect(story(page)).toHaveAttribute('data-current', name);
     await audit(page);
   });
 }
@@ -42,10 +55,11 @@ for (const [stage, name] of [
 test.describe('reduced motion', () => {
   test.use({ reducedMotion: 'reduce' });
 
-  test('swaps stages without waiting on the fade', async ({ page }) => {
+  test('still tracks the current section', async ({ page }) => {
     await page.goto('/');
     await scrollToStage(page, 1);
-    await expect(page.getByRole('heading', { name: 'Pixels with purpose.' })).toBeVisible();
+    await expect(story(page)).toHaveAttribute('data-current', 'about');
+    await expect(page.getByRole('heading', { name: 'Pixels with purpose.' })).toBeInViewport();
     await audit(page);
   });
 });

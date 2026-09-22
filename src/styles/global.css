@@ -6,7 +6,7 @@
   --color-body: #3f4757;
   --color-muted: #6a6e76;
   --color-rule: #dcdcdc;
-  /* Particles, underlines, progress bar, selection. */
+  /* Particles, underlines, selection. */
   --color-accent: #2f6fdd;
   /* Accent for small text: a touch darker than --color-accent to meet WCAG AA (4.5:1) on paper. */
   --color-accent-text: #2b68d4;
@@ -43,9 +43,4 @@
 
 @utility link-underline {
   @apply border-accent text-ink hover:text-accent-text border-b-2 transition-colors;
-}
-
-/* Only the active stage is shown; the rest stay in the accessibility tree for screen readers. */
-[data-stage]:not([data-active]) {
-  @apply sr-only;
 }

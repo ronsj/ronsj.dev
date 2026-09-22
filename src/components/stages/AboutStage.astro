@@ -1,13 +1,8 @@
 ---
 import { about } from "../../data/about";
 import StageFrame from "./StageFrame.astro";
-
-interface Props {
-  active?: boolean;
-}
-const { active } = Astro.props;
 ---
 
-<StageFrame id={about.id} shape="sphere" kicker={about.kicker} title={about.title} {active}>
+<StageFrame id={about.id} shape="sphere" kicker={about.kicker} title={about.title}>
   <p class="max-w-[46ch] text-[clamp(18px,1.6vw,22px)] leading-[1.45] text-pretty text-body">{about.body}</p>
 </StageFrame>

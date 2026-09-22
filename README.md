@@ -1,7 +1,8 @@
 # Ron San Jose — Portfolio
 
-Single-page, scroll-driven portfolio. A sticky canvas of 5,000 particles morphs through seven shapes
-(cloud → sphere → orbits → DNA helix → wave → layers → spiral galaxy) while the copy steps through seven stages.
+Single-page portfolio. The copy scrolls normally through six full-height sections while a fixed canvas
+of 5,000 particles behind it morphs to the shape of whichever section covers most of the viewport
+(cloud → sphere → orbits → DNA helix → layers → spiral galaxy).
 
 ## Stack
 
@@ -23,11 +24,12 @@ once the folder is a git repo (or run `pnpm exec lefthook install`).
 
 ## Where things live
 
-- `src/data/stages.ts` — all copy: stage text, list items, contact links
-- `src/components/ParticleStory.astro` — markup for the sticky scene
+- `src/data/*.ts` — all copy: section text, list items, contact links
+- `src/components/stages/` — one component per section, in `index.ts` order
+- `src/components/ParticleStory.astro` — the page: fixed canvas and header, sections, contact dialog
 - `src/scripts/shapes.ts` — particle target shapes
-- `src/scripts/particles.ts` — canvas renderer (projection, morphing, intro fly-in)
-- `src/scripts/stages.ts` — scroll → stage mapping, text swap, nav jumps, focus handling
+- `src/scripts/particles.ts` — canvas renderer (projection, timed morphing, intro fly-in)
+- `src/scripts/stages.ts` — which section covers most of the viewport → particle shape, nav jumps
 - `src/styles/global.css` — design tokens (`@theme`)
 
 ## Contact form email

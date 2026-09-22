@@ -1,14 +1,9 @@
 ---
 import { work } from "../../data/work";
 import StageFrame from "./StageFrame.astro";
-
-interface Props {
-  active?: boolean;
-}
-const { active } = Astro.props;
 ---
 
-<StageFrame id={work.id} shape="orbits" kicker={work.kicker} title={work.title} {active}>
+<StageFrame id={work.id} shape="orbits" kicker={work.kicker} title={work.title}>
   <p class="max-w-[46ch] text-[clamp(18px,1.6vw,22px)] leading-[1.45] text-pretty text-body">{work.body}</p>
   <ul class="mt-5 flex flex-col gap-2">
     {

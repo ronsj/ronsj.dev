@@ -1,15 +1,14 @@
 import { expect, test } from '@playwright/test';
-import { activeStage, scrollToStage } from './helpers';
+import { scrollToStage, story } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
 });
 
-test('renders the intro stage', async ({ page }) => {
+test('renders the intro section', async ({ page }) => {
   await expect(page).toHaveTitle(/Ron San Jose/);
-  await expect(page.getByRole('heading', { level: 1, name: 'Ron San Jose' })).toBeVisible();
-  await expect(activeStage(page)).toHaveCount(1);
-  await expect(page.locator('[data-stage-num]')).toHaveText('01');
+  await expect(page.getByRole('heading', { level: 1, name: 'Ron San Jose' })).toBeInViewport();
+  await expect(story(page)).toHaveAttribute('data-current', 'intro');
 });
 
 test('draws particles on the canvas', async ({ page }) => {
@@ -26,21 +25,37 @@ test('draws particles on the canvas', async ({ page }) => {
     .toBeGreaterThan(1000);
 });
 
-test('scrolling steps through every stage', async ({ page }) => {
-  const titles = [
-    'Ron San Jose',
-    'Pixels with purpose.',
-    'Selected work.',
-    'Developer DNA.',
-    'The stack.',
-    'Let’s connect.',
-  ];
-  for (const [i, title] of titles.entries()) {
+test('the section covering most of the viewport becomes current', async ({ page }) => {
+  const sections = [
+    ['intro', 'Ron San Jose'],
+    ['about', 'Pixels with purpose.'],
+    ['work', 'Selected work.'],
+    ['experience', 'Developer DNA.'],
+    ['skills', 'The stack.'],
+    ['contact', 'Let’s connect.'],
+  ] as const;
+  for (const [i, [id, title]] of sections.entries()) {
     await scrollToStage(page, i);
-    await expect(activeStage(page).getByRole('heading')).toHaveText(title);
-    await expect(activeStage(page).getByRole('heading')).toBeVisible();
-    await expect(page.locator('[data-stage-num]')).toHaveText(String(i + 1).padStart(2, '0'));
+    await expect(page.locator(`#${id}-title`)).toHaveText(title);
+    await expect(page.locator(`#${id}-title`)).toBeInViewport();
+    await expect(story(page)).toHaveAttribute('data-current', id);
   }
+});
+
+test('the current section follows the scroll position, not just section starts', async ({
+  page,
+}) => {
+  // Scroll to a point where the about section fills most of the viewport but starts below its top.
+  await page.evaluate(() => {
+    const about = document.querySelector<HTMLElement>('#about')!;
+    window.scrollTo({ top: about.offsetTop - window.innerHeight * 0.3, behavior: 'instant' });
+  });
+  await expect(story(page)).toHaveAttribute('data-current', 'about');
+  await page.evaluate(() => {
+    const about = document.querySelector<HTMLElement>('#about')!;
+    window.scrollTo({ top: about.offsetTop - window.innerHeight * 0.7, behavior: 'instant' });
+  });
+  await expect(story(page)).toHaveAttribute('data-current', 'intro');
 });
 
 test('Work nav link jumps to selected work', async ({ page }) => {
@@ -49,7 +64,8 @@ test('Work nav link jumps to selected work', async ({ page }) => {
     .getByRole('link', { name: 'Work' })
     .click();
   await expect(page).toHaveURL(/#work$/);
-  await expect(page.getByRole('heading', { name: 'Selected work.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Selected work.' })).toBeInViewport();
+  await expect(story(page)).toHaveAttribute('data-current', 'work');
 });
 
 test('Contact nav link shows contact links', async ({ page }) => {
@@ -58,43 +74,33 @@ test('Contact nav link shows contact links', async ({ page }) => {
     .getByRole('link', { name: 'Contact' })
     .click();
   await expect(page).toHaveURL(/#contact$/);
-  await expect(page.getByRole('heading', { name: 'Let’s connect.' })).toBeVisible();
-  await expect(activeStage(page).getByRole('button', { name: 'Email' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Let’s connect.' })).toBeInViewport();
+  const contact = page.locator('#contact');
+  await expect(contact.getByRole('button', { name: 'Email' })).toBeInViewport();
   const github = page.getByRole('link', { name: /GitHub/ });
-  await expect(github).toBeVisible();
+  await expect(github).toBeInViewport();
   await expect(github).toHaveAttribute('rel', 'noopener noreferrer');
-  await expect(activeStage(page).getByRole('listitem')).toHaveText([/GitHub/, /LinkedIn/, 'Email']);
+  await expect(contact.getByRole('listitem')).toHaveText([/GitHub/, /LinkedIn/, 'Email']);
 });
 
-test('nav links never show a section between the current one and the destination', async ({
+test('nav jumps morph straight to the destination, skipping the sections in between', async ({
   page,
 }) => {
-  // Record every stage that becomes active, and every counter value, while the smooth scroll is in flight.
+  // Record every section that becomes current while the smooth scroll is in flight.
   await page.evaluate(() => {
-    const seen = { active: [] as number[], counter: [] as string[] };
-    const panels = [...document.querySelectorAll('[data-stage]')];
-    new MutationObserver((records) => {
-      for (const r of records) {
-        const el = r.target as HTMLElement;
-        if (el.hasAttribute('data-active')) seen.active.push(panels.indexOf(el));
-      }
-    }).observe(document.querySelector('[data-text]')!, {
-      subtree: true,
+    const seen: string[] = [];
+    const root = document.querySelector<HTMLElement>('[data-story]')!;
+    new MutationObserver(() => seen.push(root.dataset.current ?? '')).observe(root, {
       attributes: true,
-      attributeFilter: ['data-active'],
+      attributeFilter: ['data-current'],
     });
-    const counter = document.querySelector('[data-stage-num]')!;
-    new MutationObserver(() => {
-      const value = counter.textContent ?? '';
-      if (seen.counter.at(-1) !== value) seen.counter.push(value);
-    }).observe(counter, { childList: true, characterData: true, subtree: true });
-    (window as unknown as { seenStages: typeof seen }).seenStages = seen;
+    (window as unknown as { seenSections: string[] }).seenSections = seen;
   });
   await page
     .getByRole('navigation', { name: 'Primary' })
     .getByRole('link', { name: 'Contact' })
     .click();
-  await expect(page.getByRole('heading', { name: 'Let’s connect.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Let’s connect.' })).toBeInViewport();
   // Let the scroll settle before checking what was shown along the way.
   await expect
     .poll(async () => {
@@ -104,24 +110,23 @@ test('nav links never show a section between the current one and the destination
     })
     .toBe(true);
   const seen = await page.evaluate(
-    () => (window as unknown as { seenStages: { active: number[]; counter: string[] } }).seenStages,
+    () => (window as unknown as { seenSections: string[] }).seenSections,
   );
-  expect(seen.active).toEqual([5]);
-  expect(seen.counter).toEqual(['06']);
+  expect(seen).toEqual(['contact']);
 });
 
-test('deep link opens on the matching stage', async ({ page }) => {
+test('deep link opens on the matching section', async ({ page }) => {
   await page.goto('/#contact');
-  await expect(page.getByRole('heading', { name: 'Let’s connect.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Let’s connect.' })).toBeInViewport();
+  await expect(story(page)).toHaveAttribute('data-current', 'contact');
 });
 
-test('keyboard focus brings an off-screen stage into view', async ({ page }) => {
+test('keyboard focus brings an off-screen section into view', async ({ page }) => {
   await page.getByRole('link', { name: /LinkedIn/ }).focus();
-  await expect(page.getByRole('heading', { name: 'Let’s connect.' })).toBeVisible();
   await expect(page.getByRole('link', { name: /LinkedIn/ })).toBeInViewport();
 });
 
-test('all stage content stays available to assistive tech', async ({ page }) => {
+test('every section is a labelled region', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 2 })).toHaveCount(5);
   await expect(page.getByRole('region')).toHaveCount(6);
 });

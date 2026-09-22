@@ -1,26 +1,49 @@
 import { buildShapes, type ShapeName, type ShapeSet } from './shapes';
 
 export interface ParticleOptions {
-  /** The resting shape of each stage, in scroll order. */
+  /** The resting shape of each stage, in page order. */
   shapes: readonly ShapeName[];
+  /** The stage the field rests on to begin with. */
+  stage?: number;
   count?: number;
   rotationSpeed?: number;
   color?: string;
   reducedMotion?: boolean;
 }
 
+/** Per-stage amounts that morph alongside the particles. */
+interface Weights {
+  /** How much of the hero cloud is showing; it's bigger than the other shapes, so the view zooms out. */
+  cloud: number;
+  /** How much of the solar system is showing; it's drawn tilted on its axis. */
+  orbits: number;
+  /** Stage index, which adds a little extra spin as the page goes on. */
+  turn: number;
+}
+
 /** Roll applied to the solar system after it spins, so it turns about its own tilted axis (radians). */
 const ORBITS_ROLL = -0.42;
+/** How long a morph from one stage's shape to another takes. */
+const MORPH_MS = 1400;
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
+const smoothstep = (t: number) => t * t * (3 - 2 * t);
+const mix = (a: number, b: number, t: number) => a + (b - a) * t;
+/** Each particle sets off a little after the one before it, so the morph ripples instead of snapping. */
+const stagger = (t: number, seed: number) => clamp01(t * 1.25 - seed * 0.25);
 
 /**
- * Scroll-driven particle field. `progress` runs from 0 to shapes.length - 1;
- * integer values are the resting shapes, fractions morph between neighbours.
+ * Particle field that rests on one stage's shape at a time. `setStage` morphs it to another stage's
+ * shape over MORPH_MS; a change of stage mid-morph carries on from wherever the particles are.
  */
 export class ParticleField {
-  progress = 0;
-  /** Set while a nav link smooth-scrolls across several stages, so we morph straight to the target. */
-  private jump: { from: number; to: number } | null = null;
+  private stage: number;
+  /** Where each particle is morphing from: a copy of a stage's shape, or a snapshot taken mid-morph. */
+  private readonly from: Float32Array;
+  private to: Float32Array;
+  private fromW: Weights;
+  private toW: Weights;
+  /** When the current morph began; -Infinity means it's finished. */
+  private morphAt = -Infinity;
 
   private readonly ctx: CanvasRenderingContext2D;
   private readonly n: number;
@@ -28,9 +51,9 @@ export class ParticleField {
   private readonly color: string;
   private readonly reduced: boolean;
   private readonly set: ShapeSet;
-  /** Index of the solar system, which is shown tilted on its axis (-1 if no stage uses it). */
+  /** Index of the solar system stage (-1 if no stage uses it). */
   private readonly orbitsAt: number;
-  /** Index of the hero cloud, which is bigger than the other shapes (-1 if no stage uses it). */
+  /** Index of the hero cloud stage (-1 if no stage uses it). */
   private readonly cloudAt: number;
   private readonly px: Float32Array;
   private readonly py: Float32Array;
@@ -57,6 +80,10 @@ export class ParticleField {
     this.set = buildShapes(this.n, opts.shapes);
     this.orbitsAt = opts.shapes.indexOf('orbits');
     this.cloudAt = opts.shapes.indexOf('cloud');
+    this.stage = Math.max(0, Math.min(opts.shapes.length - 1, opts.stage ?? 0));
+    this.to = this.set.shapes[this.stage]!;
+    this.from = new Float32Array(this.to);
+    this.fromW = this.toW = this.weightsOf(this.stage);
     this.px = new Float32Array(this.n);
     this.py = new Float32Array(this.n);
     this.pz = new Float32Array(this.n);
@@ -65,8 +92,34 @@ export class ParticleField {
     this.resize();
   }
 
-  jumpTo(to: number) {
-    if (Math.abs(this.progress - to) > 0.02) this.jump = { from: this.progress, to };
+  /** Morph to the shape of stage `i`. */
+  setStage(i: number) {
+    if (i === this.stage || !this.set.shapes[i]) return;
+    const now = performance.now();
+    const t = this.morphT(now);
+    const { from, to, n } = this;
+    const { seeds } = this.set;
+    if (t < 1) {
+      // Mid-morph: freeze the particles where they are and set off again from there.
+      for (let k = 0; k < n * 3; k += 3) {
+        const tt = stagger(t, seeds[k]!);
+        from[k] = mix(from[k]!, to[k]!, tt);
+        from[k + 1] = mix(from[k + 1]!, to[k + 1]!, tt);
+        from[k + 2] = mix(from[k + 2]!, to[k + 2]!, tt);
+      }
+      this.fromW = {
+        cloud: mix(this.fromW.cloud, this.toW.cloud, t),
+        orbits: mix(this.fromW.orbits, this.toW.orbits, t),
+        turn: mix(this.fromW.turn, this.toW.turn, t),
+      };
+    } else {
+      from.set(to);
+      this.fromW = this.toW;
+    }
+    this.stage = i;
+    this.to = this.set.shapes[i]!;
+    this.toW = this.weightsOf(i);
+    this.morphAt = now;
   }
 
   resize() {
@@ -89,35 +142,29 @@ export class ParticleField {
     cancelAnimationFrame(this.raf);
   }
 
+  private weightsOf(i: number): Weights {
+    return { cloud: i === this.cloudAt ? 1 : 0, orbits: i === this.orbitsAt ? 1 : 0, turn: i };
+  }
+
+  /** How far the current morph has got, eased, from 0 to 1. Reduced motion swaps shapes outright. */
+  private morphT(now: number) {
+    if (this.reduced) return 1;
+    return smoothstep(clamp01((now - this.morphAt) / MORPH_MS));
+  }
+
   private draw(now: number) {
     const { ctx, n, w: W, h: H, dpr, px, py, pz, pf, order } = this;
-    const { shapes, scatter: S, seeds } = this.set;
-    const last = shapes.length - 1;
-    const p = this.progress;
+    const { scatter: S, seeds } = this.set;
+    const A = this.from;
+    const B = this.to;
+    const t = this.morphT(now);
+    const cloudW = mix(this.fromW.cloud, this.toW.cloud, t);
+    const rollW = mix(this.fromW.orbits, this.toW.orbits, t);
+    const turn = mix(this.fromW.turn, this.toW.turn, t);
 
-    let i0 = Math.floor(p);
-    let i1 = Math.min(last, i0 + 1);
-    let t = p - i0;
-    if (this.jump) {
-      const J = this.jump;
-      const span = J.to - J.from;
-      const u = span === 0 ? 1 : (p - J.from) / span;
-      if (u >= 0.995) this.jump = null;
-      else {
-        i0 = Math.round(J.from);
-        i1 = J.to;
-        t = clamp01(u);
-      }
-    }
-    // Hold each shape for a beat at either end of the scroll segment, then smoothstep.
-    t = clamp01((t - 0.12) / 0.76);
-    t = t * t * (3 - 2 * t);
-
-    const A = shapes[i0]!;
-    const B = shapes[i1]!;
     const time = this.reduced ? 0 : (now - this.t0) / 1000;
     const intro = this.reduced ? 1 : clamp01((time - 0.2) / 2.8);
-    const ay = time * 0.25 * this.spin + p * 0.9;
+    const ay = time * 0.25 * this.spin + turn * 0.9;
     const ax = 0.35 + Math.sin(time * 0.3) * 0.08;
 
     const c1 = Math.cos(ay);
@@ -125,7 +172,6 @@ export class ParticleField {
     const c2 = Math.cos(ax);
     const s2 = Math.sin(ax);
     // Ease the tilt in and out as the solar system morphs from and into its neighbours.
-    const rollW = i0 === this.orbitsAt ? 1 - t : i1 === this.orbitsAt ? t : 0;
     const c3 = Math.cos(ORBITS_ROLL * rollW);
     const s3 = Math.sin(ORBITS_ROLL * rollW);
 
@@ -137,9 +183,7 @@ export class ParticleField {
     const cys = wide ? H * 0.5 : H * 0.28;
     // Particle opacity by device class: phones, tablets (≥768px), desktops (≥1024px).
     const fade = W >= 1024 ? 0.6 : W >= 768 ? 0.4 : 0.2;
-    // The hero cloud is bigger than the other shapes, so zoom out in proportion to how much of it is
-    // on screen. This stays continuous whichever direction we morph, including nav jumps.
-    const cloudW = (i0 === this.cloudAt ? 1 - t : 0) + (i1 === this.cloudAt ? t : 0);
+    // The hero cloud is bigger than the other shapes, so zoom out in proportion to how much of it is showing.
     const cloudR = 1.1 + cloudW;
     const half = wide ? (W - textEdge) / 2 - 24 : W * 0.46;
     const fit = Math.max(1.3, cloudR);
@@ -149,7 +193,7 @@ export class ParticleField {
 
     for (let i = 0; i < n; i++) {
       const k = i * 3;
-      const tt = clamp01(t * 1.25 - seeds[k]! * 0.25);
+      const tt = stagger(t, seeds[k]!);
       let x = A[k]! + (B[k]! - A[k]!) * tt + Math.sin(time * 0.8 + seeds[k]! * 9) * drift;
       let y =
         A[k + 1]! + (B[k + 1]! - A[k + 1]!) * tt + Math.cos(time * 0.7 + seeds[k + 1]! * 9) * drift;

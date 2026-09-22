@@ -124,7 +124,7 @@ export function initContactForm(root: HTMLElement) {
     dialog.showModal();
     // showModal() focuses the first focusable element, which is the close button; start on the form.
     input('name')?.focus();
-    // The page behind is scroll-driven, so freeze it while the dialog is up.
+    // Keep the page from scrolling behind the modal.
     document.documentElement.style.overflow = 'hidden';
     void mountWidget();
   };

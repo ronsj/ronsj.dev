@@ -2,12 +2,13 @@
 import type { ShapeName } from "../../scripts/shapes";
 
 /**
- * The shell every stage shares: the `data-stage` section the scroll script toggles, the kicker and
- * the optically aligned heading. What goes under the heading is up to each stage (the slot).
+ * The shell every stage shares: a full-height `data-stage` section the scroll script watches, the
+ * kicker and the optically aligned heading. What goes under the heading is up to each stage (the slot).
  */
 interface Props {
+  /** Anchor id the nav jumps to. */
   id: string;
-  /** The shape the particle field settles into while this stage is showing. */
+  /** The shape the particle field settles into while this stage covers most of the viewport. */
   shape: ShapeName;
   kicker: string;
   title: string;
@@ -15,8 +16,6 @@ interface Props {
   level?: "h1" | "h2";
   /** Size/wrap classes for the heading; the default suits a multi-word title. */
   titleClass?: string;
-  /** Whether this stage is the one showing before the scroll script runs. */
-  active?: boolean;
 }
 
 const {
@@ -26,7 +25,6 @@ const {
   title,
   level: Heading = "h2",
   titleClass = "text-[clamp(44px,7vw,96px)] text-balance",
-  active = false,
 } = Astro.props;
 const titleId = `${id}-title`;
 
@@ -40,7 +38,13 @@ const OPTICAL_FACTOR = 0.8;
 const opticalOffset = `margin-left: -${((bearings[title[0] ?? ""] ?? 0) * OPTICAL_FACTOR).toFixed(4)}em`;
 ---
 
-<section data-stage data-shape={shape} data-active={active ? "" : undefined} aria-labelledby={titleId}>
+<section
+  id={id}
+  data-stage
+  data-shape={shape}
+  aria-labelledby={titleId}
+  class="flex min-h-svh flex-col justify-center pt-24 pb-20"
+>
   <p class="mb-[18px] ml-2 flex items-center gap-3 text-sm font-medium tracking-[0.18em] text-accent-text uppercase">
     <svg aria-hidden="true" width="32" height="10" viewBox="0 0 32 10" fill="none" class="block flex-none">
       <path
