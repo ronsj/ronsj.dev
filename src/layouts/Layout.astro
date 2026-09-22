@@ -39,7 +39,9 @@ const person = {
     <meta name="author" content={AUTHOR} />
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <link rel="canonical" href={canonical} />
-    <meta name="theme-color" content="#f5f5f5" />
+    {/* The paper colour of each theme; scripts/theme.ts keeps these in step with an explicit choice. */}
+    <meta name="theme-color" content="#f5f5f5" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1c2230" media="(prefers-color-scheme: dark)" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 
@@ -61,6 +63,20 @@ const person = {
     <meta name="twitter:image:alt" content={`${AUTHOR}, frontend developer`} />
 
     <script type="application/ld+json" set:html={JSON.stringify(person)} />
+
+    {/* Set the theme before first paint so a stored choice doesn't flash the other theme. Inline on purpose. */}
+    <script is:inline>
+      (() => {
+        let theme = null;
+        try {
+          theme = localStorage.getItem("theme");
+        } catch {}
+        if (theme !== "light" && theme !== "dark") {
+          theme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
 
     <Font cssVariable="--font-manrope" preload />
     <Font cssVariable="--font-sora" preload />

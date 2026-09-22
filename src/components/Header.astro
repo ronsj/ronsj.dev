@@ -1,7 +1,10 @@
 ---
 import { gutter } from "../styles/layout";
 
-/** Fixed site header: the monogram (back to top) and the primary nav. Nav jumps are handled by scripts/sections.ts. */
+/**
+ * Fixed site header: the monogram (back to top), the primary nav and the theme toggle.
+ * Nav jumps are handled by scripts/sections.ts, the toggle by scripts/theme.ts.
+ */
 ---
 
 <header
@@ -18,8 +21,42 @@ import { gutter } from "../styles/layout";
     aria-label="Ron San Jose, back to top"
     >RSJ</a
   >
-  <nav aria-label="Primary" class="flex gap-[22px]">
-    <a href="#work" class="border-b-2 border-transparent transition-colors hover:border-accent hover:text-accent-text">Work</a>
-    <a href="#contact" class="border-b-2 border-transparent transition-colors hover:border-accent hover:text-accent-text">Contact</a>
-  </nav>
+  <div class="flex items-center gap-[22px]">
+    <nav aria-label="Primary" class="flex gap-[22px]">
+      <a href="#work" class="border-b-2 border-transparent transition-colors hover:border-accent hover:text-accent-text">Work</a>
+      <a href="#contact" class="border-b-2 border-transparent transition-colors hover:border-accent hover:text-accent-text">Contact</a>
+    </nav>
+    <button
+      type="button"
+      data-theme-toggle
+      aria-label="Dark theme"
+      aria-pressed="false"
+      class="-mr-2 grid size-8 cursor-pointer place-items-center rounded-sm transition-colors hover:text-accent-text"
+    >
+      {/* Moon when the light theme is on (press for dark), sun when the dark theme is on. */}
+      <svg aria-hidden="true" class="dark:hidden" width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path
+          d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11Z"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linejoin="round"
+        />
+      </svg>
+      <svg aria-hidden="true" class="hidden dark:block" width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8" />
+        <path
+          d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+        />
+      </svg>
+    </button>
+  </div>
 </header>
+
+<script>
+  import { initTheme } from "../scripts/theme";
+
+  initTheme(document);
+</script>
