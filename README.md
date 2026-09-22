@@ -1,13 +1,10 @@
 # Ron San Jose — Portfolio
 
-Single-page portfolio. The copy scrolls normally through six full-height sections while a fixed canvas
-of 5,000 particles behind it morphs to the shape of whichever section covers most of the viewport
-(cloud → sphere → orbits → DNA helix → layers → spiral galaxy).
+Single-page portfolio website.
 
 ## Stack
 
-Astro + TypeScript, React (for the Work accordion), Tailwind CSS v4, Oxlint, Oxfmt, Lefthook,
-Playwright + axe-core.
+Astro + TypeScript, React, Tailwind CSS v4, Oxlint, Oxfmt, Lefthook, Playwright.
 
 ## Scripts
 
@@ -20,8 +17,7 @@ Playwright + axe-core.
 | `pnpm format`   | Oxfmt (`format:check` in CI)                               |
 | `pnpm test:e2e` | Build, serve, and run Playwright + axe on desktop & mobile |
 
-Lefthook runs Oxlint and Oxfmt on staged files before each commit. Hooks install on `pnpm install`
-once the folder is a git repo (or run `pnpm exec lefthook install`).
+Lefthook runs Oxlint and Oxfmt on staged files before each commit. Hooks install on `pnpm install` once the folder is a git repo (or run `pnpm exec lefthook install`).
 
 ## Where things live
 
@@ -36,9 +32,7 @@ once the folder is a git repo (or run `pnpm exec lefthook install`).
 
 ## Contact form email
 
-The "Email" button on the contact section opens a form that posts to the `sendEmail` Astro Action
-(`src/actions/index.ts`). The action sends the message through Cloudflare's `send_email` Worker
-binding, declared in `wrangler.jsonc` as `EMAIL`, to the address in the `CONTACT_TO` var.
+The "Email" button on the contact section opens a form that posts to the `sendEmail` Astro Action (`src/actions/index.ts`). The action sends the message through Cloudflare's `send_email` Worker binding, declared in `wrangler.jsonc` as `EMAIL`, to the address in the `CONTACT_TO` var.
 
 For sending to work in production, the Cloudflare account needs:
 
@@ -47,28 +41,18 @@ For sending to work in production, the Cloudflare account needs:
 - **`CONTACT_TO` verified as a destination address** in Email Routing. The binding's
   `destination_address` restricts sending to that one address.
 
-In `astro dev` and `astro preview`, workerd simulates the binding: nothing is delivered, the message
-is logged and its body written under `.wrangler/tmp/email/`.
+In `astro dev` and `astro preview`, workerd simulates the binding: nothing is delivered, the message is logged and its body written under `.wrangler/tmp/email/`.
 
 Run `pnpm types` (or any of `dev`, `build`, `check`, which run it first) to regenerate
 `worker-configuration.d.ts` after changing `wrangler.jsonc`.
 
 ## Contact form bot protection (Turnstile)
 
-The contact form is protected by a Cloudflare Turnstile widget (sitekey `0x4AAAAAAE8wGzGjBwHSydBN`,
-registered for `ronsj.dev` and `ronsj-dev.ronsj1.workers.dev`). The widget script loads only when the dialog opens, and the Send button
-stays disabled until the widget issues a token. The `sendEmail` action verifies that token with
-Cloudflare's siteverify (`src/actions/turnstile.ts`) before sending anything (only the honeypot check
-runs earlier, so bots that trip it get a quiet success without a siteverify call): it must succeed, carry
-the action `contact`, and report a hostname listed in the `TURNSTILE_HOSTNAMES` var.
+The contact form is protected by a Cloudflare Turnstile widget (sitekey `0x4AAAAAAE8wGzGjBwHSydBN`, registered for `ronsj.dev` and `ronsj-dev.ronsj1.workers.dev`). The widget script loads only when the dialog opens, and the Send button stays disabled until the widget issues a token. The `sendEmail` action verifies that token with
+Cloudflare's siteverify (`src/actions/turnstile.ts`) before sending anything (only the honeypot check runs earlier, so bots that trip it get a quiet success without a siteverify call): it must succeed, carry the action `contact`, and report a hostname listed in the `TURNSTILE_HOSTNAMES` var.
 
-- **Production:** the widget secret is the `TURNSTILE_SECRET` secret on the `ronsj-dev` Worker
-  (set with `wrangler secret put`, never committed). `TURNSTILE_HOSTNAMES` lists `ronsj.dev` and the `ronsj-dev.ronsj1.workers.dev` preview
-  hostname; both must also be allowed domains on the sitekey, or the widget never issues a token there.
-- **Local dev and tests:** Cloudflare's documented dummy keys are used instead, so nothing here needs
-  the real secret: `.env` sets `PUBLIC_TURNSTILE_SITE_KEY` to the always-pass sitekey and `.dev.vars`
-  sets `TURNSTILE_SECRET` to the always-pass secret with an empty hostname list. Both files are
-  gitignored; recreate them from the snippets below if they're missing.
+- **Production:** the widget secret is the `TURNSTILE_SECRET` secret on the `ronsj-dev` Worker (set with `wrangler secret put`, never committed). `TURNSTILE_HOSTNAMES` lists `ronsj.dev` and the `ronsj-dev.ronsj1.workers.dev` preview hostname; both must also be allowed domains on the sitekey, or the widget never issues a token there.
+- **Local dev and tests:** Cloudflare's documented dummy keys are used instead, so nothing here needs the real secret: `.env` sets `PUBLIC_TURNSTILE_SITE_KEY` to the always-pass sitekey and `.dev.vars` sets `TURNSTILE_SECRET` to the always-pass secret with an empty hostname list. Both files are gitignored; recreate them from the snippets below if they're missing.
 
 ```
 # .env
