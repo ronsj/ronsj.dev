@@ -46,15 +46,14 @@ test('the current section follows the scroll position, not just section starts',
   page,
 }) => {
   // Scroll to a point where the about section fills most of the viewport but starts below its top.
-  await page.evaluate(() => {
-    const about = document.querySelector<HTMLElement>('#about')!;
-    window.scrollTo({ top: about.offsetTop - window.innerHeight * 0.3, behavior: 'instant' });
-  });
+  const scrollAboveAbout = (fraction: number) =>
+    page.evaluate((f) => {
+      const top = document.querySelector('#about')!.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({ top: top - window.innerHeight * f, behavior: 'instant' });
+    }, fraction);
+  await scrollAboveAbout(0.3);
   await expect(story(page)).toHaveAttribute('data-current', 'about');
-  await page.evaluate(() => {
-    const about = document.querySelector<HTMLElement>('#about')!;
-    window.scrollTo({ top: about.offsetTop - window.innerHeight * 0.7, behavior: 'instant' });
-  });
+  await scrollAboveAbout(0.7);
   await expect(story(page)).toHaveAttribute('data-current', 'intro');
 });
 
@@ -116,14 +115,29 @@ test('nav jumps morph straight to the destination, skipping the sections in betw
 });
 
 test('deep link opens on the matching section', async ({ page }) => {
+  // beforeEach has already loaded the site, so leave it first: otherwise this would be a same-document
+  // hash change rather than the fresh load a shared link produces.
+  await page.goto('about:blank');
   await page.goto('/#contact');
   await expect(page.getByRole('heading', { name: 'Let’s connect.' })).toBeInViewport();
   await expect(story(page)).toHaveAttribute('data-current', 'contact');
 });
 
-test('keyboard focus brings an off-screen section into view', async ({ page }) => {
-  await page.getByRole('link', { name: /LinkedIn/ }).focus();
-  await expect(page.getByRole('link', { name: /LinkedIn/ })).toBeInViewport();
+test('tabbing down the page reaches the contact links and brings their section into view', async ({
+  page,
+}) => {
+  const linkedIn = page.getByRole('link', { name: /LinkedIn/ });
+  // Header links, project headers and skill rows come first; the count is generous so it's not a tab-order assertion.
+  for (
+    let i = 0;
+    i < 30 && !(await linkedIn.evaluate((el) => el === document.activeElement));
+    i++
+  ) {
+    await page.keyboard.press('Tab');
+  }
+  await expect(linkedIn).toBeFocused();
+  await expect(linkedIn).toBeInViewport();
+  await expect(story(page)).toHaveAttribute('data-current', 'contact');
 });
 
 test('every section is a labelled region', async ({ page }) => {

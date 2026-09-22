@@ -1,11 +1,13 @@
 import { AxeBuilder } from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { AXE_TAGS, hideCanvas } from './helpers';
 
 const openWork = async (page: Page) => {
   await page.goto('/#work');
+  const work = page.locator('#work');
   // The accordion hydrates once the section is on screen; Astro drops `ssr` from the island when it has.
-  await expect(page.locator('astro-island')).not.toHaveAttribute('ssr');
-  return page.locator('#work');
+  await expect(work.locator('astro-island')).not.toHaveAttribute('ssr');
+  return work;
 };
 
 test('each project expands to its description and closes the one before', async ({ page }) => {
@@ -21,7 +23,8 @@ test('each project expands to its description and closes the one before', async 
 
   await peets.click();
   await expect(peets).toHaveAttribute('aria-expanded', 'true');
-  const panel = page.locator(`#${await peets.getAttribute('aria-controls')}`);
+  // An attribute selector, because React's generated ids can hold characters a #id selector can't.
+  const panel = work.locator(`[id="${await peets.getAttribute('aria-controls')}"]`);
   await expect(panel).not.toHaveAttribute('inert');
   await expect(panel.getByText(/I built theme sections/)).toBeVisible();
   const visit = panel.getByRole('link', { name: /Visit Peet's Coffee/ });
@@ -57,11 +60,8 @@ test('the open accordion has no axe violations', async ({ page }) => {
   const work = await openWork(page);
   await work.getByRole('button', { name: /Barnes & Noble/ }).click();
   await expect(page.getByRole('link', { name: /Visit Barnes & Noble/ })).toBeVisible();
-  await page.locator('[data-canvas]').evaluate((c: HTMLElement) => (c.style.visibility = 'hidden'));
-  const results = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
-    .include('#work')
-    .analyze();
+  await hideCanvas(page);
+  const results = await new AxeBuilder({ page }).withTags(AXE_TAGS).include('#work').analyze();
   expect(results.violations).toEqual([]);
   expect(results.incomplete.filter((r) => r.id === 'color-contrast')).toEqual([]);
 });

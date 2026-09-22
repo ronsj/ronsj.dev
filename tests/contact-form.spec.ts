@@ -1,5 +1,6 @@
 import { AxeBuilder } from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { AXE_TAGS, hideCanvas } from './helpers';
 
 const openDialog = async (page: Page) => {
   await page.goto('/#contact');
@@ -9,26 +10,41 @@ const openDialog = async (page: Page) => {
   return dialog;
 };
 
-/** The suite builds with Turnstile's always-pass dummy sitekey, so the widget verifies on its own. */
-const awaitVerified = async (dialog: ReturnType<Page['getByRole']>) => {
-  await expect(dialog.locator('input[name="cf-turnstile-response"]')).not.toHaveValue('');
+type Dialog = ReturnType<Page['getByRole']>;
+const tokenInput = (dialog: Dialog) => dialog.locator('input[name="cf-turnstile-response"]');
+
+/**
+ * The suite builds with Turnstile's always-pass dummy sitekey, so the widget verifies on its own.
+ * Pass the token from an earlier attempt to insist on a new one, since tokens are single-use.
+ */
+const awaitVerified = async (dialog: Dialog, previousToken = '') => {
+  await expect(tokenInput(dialog)).not.toHaveValue(previousToken);
+  await expect(tokenInput(dialog)).not.toHaveValue('');
   await expect(dialog.getByRole('button', { name: 'Send' })).toBeEnabled();
 };
 
 test('Email button opens an accessible dialog and Escape closes it', async ({ page }) => {
+  // Hold the Turnstile script back until the pre-verification state has been checked; the always-pass
+  // widget otherwise enables Send within milliseconds of the dialog opening.
+  let releaseTurnstile!: () => void;
+  const gate = new Promise<void>((resolve) => (releaseTurnstile = resolve));
+  await page.route('**/turnstile/v0/api.js*', async (route) => {
+    await gate;
+    await route.continue();
+  });
   const dialog = await openDialog(page);
+  await expect(dialog.getByRole('button', { name: 'Send' })).toBeDisabled();
+  await expect(dialog.getByLabel('Name', { exact: true })).toBeFocused();
   for (const name of ['Name', 'Email', 'Message']) {
     await expect(dialog.getByLabel(name, { exact: true })).toHaveAttribute('required', '');
   }
-  await expect(dialog.getByLabel('Name', { exact: true })).toBeFocused();
-  await expect(dialog.getByRole('button', { name: 'Send' })).toBeDisabled();
+  releaseTurnstile();
   await awaitVerified(dialog);
 
-  const results = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
-    .include('dialog')
-    .analyze();
+  await hideCanvas(page);
+  const results = await new AxeBuilder({ page }).withTags(AXE_TAGS).include('dialog').analyze();
   expect(results.violations).toEqual([]);
+  expect(results.incomplete.filter((r) => r.id === 'color-contrast')).toEqual([]);
 
   await page.keyboard.press('Escape');
   await expect(dialog).toBeHidden();
@@ -42,6 +58,7 @@ test('server validation errors are shown inline', async ({ page }) => {
   await dialog.getByLabel('Email', { exact: true }).fill('a@b');
   await dialog.getByLabel('Message', { exact: true }).fill('Hello');
   await awaitVerified(dialog);
+  const spentToken = await tokenInput(dialog).inputValue();
   await dialog.getByRole('button', { name: 'Send' }).click();
 
   const emailField = dialog.getByLabel('Email', { exact: true });
@@ -50,7 +67,7 @@ test('server validation errors are shown inline', async ({ page }) => {
   await expect(dialog.getByText('Please enter a valid email address.')).toBeVisible();
   await expect(dialog.getByRole('status')).toHaveText('Please check the highlighted fields.');
   // The token was spent on that attempt; the widget must issue a fresh one before a retry.
-  await awaitVerified(dialog);
+  await awaitVerified(dialog, spentToken);
 });
 
 test('a valid submission sends and shows the confirmation', async ({ page }) => {
@@ -70,9 +87,8 @@ test('a valid submission sends and shows the confirmation', async ({ page }) => 
   await expect(dialog).toBeHidden();
 });
 
-test('the action rejects a submission with no Turnstile token', async ({ page, baseURL }) => {
-  await page.goto('/');
-  const response = await page.request.post(`${baseURL}/_actions/sendEmail`, {
+test('the action rejects a submission with no Turnstile token', async ({ request, baseURL }) => {
+  const response = await request.post('/_actions/sendEmail', {
     headers: { Accept: 'application/json', Origin: baseURL! },
     multipart: { name: 'Bot', email: 'bot@example.com', message: 'No token here' },
   });

@@ -1,16 +1,10 @@
 import { AxeBuilder } from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { scrollToSection, story } from './helpers';
+import { AXE_TAGS, hideCanvas, scrollToSection, story } from './helpers';
 
-const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'];
-
-/**
- * The decorative particle canvas sits behind all text, which makes axe report every
- * colour-contrast check as "incomplete". Hide it so text is measured against the page
- * background, and fail if any contrast check still can't be determined.
- */
+/** Audit the whole page, failing if any colour-contrast check can't be determined either. */
 async function audit(page: Page) {
-  await page.locator('[data-canvas]').evaluate((c: HTMLElement) => (c.style.visibility = 'hidden'));
+  await hideCanvas(page);
   // Chips scrolled past the edge of a horizontal skills row are clipped by the row, so axe can't tell
   // what's behind them and reports them as unmeasurable. They share the visible chips' styles, so skip them.
   await page.evaluate(() => {
@@ -23,7 +17,7 @@ async function audit(page: Page) {
     }
   });
   const results = await new AxeBuilder({ page })
-    .withTags(TAGS)
+    .withTags(AXE_TAGS)
     .exclude('header')
     .exclude('[data-axe-skip]')
     .analyze();
@@ -34,23 +28,17 @@ async function audit(page: Page) {
   // Its dark text has the least contrast against the page background at the transparent end, so
   // check that worst case by measuring with the gradient removed.
   await page.locator('header').evaluate((h: HTMLElement) => (h.style.backgroundImage = 'none'));
-  const header = await new AxeBuilder({ page }).withTags(TAGS).include('header').analyze();
+  const header = await new AxeBuilder({ page }).withTags(AXE_TAGS).include('header').analyze();
   expect(header.violations).toEqual([]);
   expect(header.incomplete.filter((r) => r.id === 'color-contrast')).toEqual([]);
 }
 
-for (const [section, name] of [
-  [0, 'intro'],
-  [4, 'skills'],
-  [5, 'contact'],
-] as const) {
-  test(`no axe violations with the ${name} section on screen`, async ({ page }) => {
-    await page.goto('/');
-    await scrollToSection(page, section);
-    await expect(story(page)).toHaveAttribute('data-current', name);
-    await audit(page);
-  });
-}
+// Every section is in the DOM at once, so one audit covers the whole page.
+test('no axe violations', async ({ page }) => {
+  await page.goto('/');
+  await expect(story(page)).toHaveAttribute('data-current', 'intro');
+  await audit(page);
+});
 
 test.describe('reduced motion', () => {
   test.use({ reducedMotion: 'reduce' });
