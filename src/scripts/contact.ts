@@ -146,9 +146,14 @@ export function initContactForm(root: HTMLElement) {
   for (const closer of dialog.querySelectorAll('[data-email-close]')) {
     closer.addEventListener('click', () => dialog.close());
   }
-  // A click on the backdrop lands on the dialog element itself, not its children.
+  // A click on the backdrop lands on the dialog element itself, but so does one on the dialog's own
+  // padding, so only close when the pointer was outside the dialog's box.
   dialog.addEventListener('click', (e) => {
-    if (e.target === dialog) dialog.close();
+    if (e.target !== dialog) return;
+    const r = dialog.getBoundingClientRect();
+    const inside =
+      e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+    if (!inside) dialog.close();
   });
   dialog.addEventListener('close', () => {
     document.documentElement.style.overflow = '';
