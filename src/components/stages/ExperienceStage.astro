@@ -17,9 +17,10 @@ const { active } = Astro.props;
       experience.roles.map((r) => (
         <li class="grid grid-cols-[auto_1fr] items-baseline gap-3.5 border-t border-rule pt-2 text-sm leading-[1.35] sm:text-lg">
           <span class="font-mono font-medium text-accent-text">{r.years}</span>
-          <span>
+          <span class="flex gap-1 items-baseline flex-wrap">
             <strong class="font-medium text-ink">{r.title}</strong>
-            <span class="block leading-[1.7] text-muted">
+            <span>@</span>
+            <span class="leading-[1.7] text-muted">
               {r.companyUrl ? (
                 <a href={r.companyUrl} class="link-underline" target="_blank" rel="noopener noreferrer">
                   {r.company}

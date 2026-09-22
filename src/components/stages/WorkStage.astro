@@ -17,12 +17,12 @@ const { active } = Astro.props;
           <span aria-hidden="true" class="font-mono font-medium text-accent-text">
             ~
           </span>
-          <span>
+          <span class="flex md:gap-3.5 items-baseline flex-wrap flex-col md:flex-row gap-1">
             <a href={p.url} class="link-underline" target="_blank" rel="noopener noreferrer">
               <strong class="font-medium">{p.name}</strong>
               <span class="sr-only"> (opens in a new tab)</span>
             </a>
-            <span class="block leading-[1.7] text-muted">{p.summary}</span>
+            <span class="leading-[1.7] text-muted">{p.summary}</span>
           </span>
         </li>
       ))
