@@ -1,19 +1,15 @@
 ---
 import { stages } from "./stages";
 
-interface Props {
-  /** Number of particles in the field (1000–12000). */
-  particles?: number;
-}
-
-const { particles = 5000 } = Astro.props;
+/** Number of particles in the field (1000–12000). */
+const PARTICLE_COUNT = 5000;
 const gutter = "px-[clamp(20px,5vw,64px)]";
 
 // Turnstile widget for the contact form. Public, so it's baked in; tests build with a dummy sitekey.
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "0x4AAAAAAE8wGzGjBwHSydBN";
 ---
 
-<div data-story data-particles={particles} class="relative">
+<div data-story data-particles={PARTICLE_COUNT} class="relative">
   {/* Fixed behind the scrolling copy; the script morphs it to the shape of the section covering most of the viewport. */}
   <canvas data-canvas aria-hidden="true" class="pointer-events-none fixed inset-0 block size-full"></canvas>
 
