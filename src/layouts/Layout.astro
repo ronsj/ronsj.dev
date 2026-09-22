@@ -64,17 +64,18 @@ const person = {
 
     <script type="application/ld+json" set:html={JSON.stringify(person)} />
 
-    {/* Set the theme before first paint so a stored choice doesn't flash the other theme. Inline on purpose. */}
+    {/* Set the theme before first paint so a stored choice doesn't flash the other theme. Inline on purpose; scripts/theme.ts takes over from here. */}
     <script is:inline>
       (() => {
-        let theme = null;
+        let mode = null;
         try {
-          theme = localStorage.getItem("theme");
+          mode = localStorage.getItem("theme");
         } catch {}
-        if (theme !== "light" && theme !== "dark") {
-          theme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-        }
-        document.documentElement.dataset.theme = theme;
+        if (mode !== "light" && mode !== "dark") mode = "auto";
+        const html = document.documentElement;
+        html.dataset.mode = mode;
+        html.dataset.theme =
+          mode === "auto" ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : mode;
       })();
     </script>
 

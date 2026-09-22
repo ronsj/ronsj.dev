@@ -29,7 +29,7 @@ Lefthook runs Oxlint and Oxfmt on staged files before each commit. Hooks install
 - `src/scripts/particles.ts` — canvas renderer (projection, timed morphing, intro fly-in)
 - `src/scripts/sections.ts` — which section covers most of the viewport → particle shape, nav jumps
 - `src/styles/global.css` — design tokens (`@theme`) and their dark-theme values
-- `src/scripts/theme.ts` — the light/dark toggle; the theme follows the system until the header button sets one
+- `src/scripts/theme.ts` — the header theme button, cycling auto (follow the system, the default), light and dark
 
 ## Contact form email
 
