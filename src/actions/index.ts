@@ -12,7 +12,9 @@ export const server = {
         .string('Please tell me your name.')
         .trim()
         .min(1, 'Please tell me your name.')
-        .max(200, 'That name is too long.'),
+        .max(200, 'That name is too long.')
+        // The name goes into mail headers, so a line break in it would let the sender add headers.
+        .refine((s) => !/\p{Cc}/u.test(s), 'Please use only letters and punctuation in your name.'),
       email: z
         .email('Please enter a valid email address.')
         .trim()
