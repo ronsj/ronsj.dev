@@ -27,17 +27,24 @@ let turnstileLoading: Promise<Turnstile> | null = null;
 /** Injects the Turnstile script the first time it's needed, so visitors who never open the form don't load it. */
 function loadTurnstile(): Promise<Turnstile> {
   if (window.turnstile) return Promise.resolve(window.turnstile);
-  turnstileLoading ??= new Promise((resolve, reject) => {
+  if (!turnstileLoading) {
     const script = document.createElement('script');
     script.src = TURNSTILE_SRC;
     script.async = true;
-    script.addEventListener('load', () => {
-      if (window.turnstile) resolve(window.turnstile);
-      else reject(new Error('Turnstile failed to initialise'));
+    turnstileLoading = new Promise<Turnstile>((resolve, reject) => {
+      script.addEventListener('load', () => {
+        if (window.turnstile) resolve(window.turnstile);
+        else reject(new Error('Turnstile failed to initialise'));
+      });
+      script.addEventListener('error', () => reject(new Error('Turnstile failed to load')));
+      document.head.appendChild(script);
+    }).catch((error: unknown) => {
+      // Don't remember the failure: the next open injects a fresh script and tries again.
+      turnstileLoading = null;
+      script.remove();
+      throw error;
     });
-    script.addEventListener('error', () => reject(new Error('Turnstile failed to load')));
-    document.head.appendChild(script);
-  });
+  }
   return turnstileLoading;
 }
 
@@ -92,28 +99,34 @@ export function initContactForm(root: HTMLElement) {
     if (turnstile && widgetId) turnstile.reset(widgetId);
     setVerified(false);
   };
-  const mountWidget = async () => {
+  /** Set while the widget is loading or rendering, so overlapping opens don't render it twice. */
+  let mounting: Promise<void> | null = null;
+  const mountWidget = () => {
     if (widgetId) return;
-    try {
-      turnstile = await loadTurnstile();
-      widgetId = turnstile.render(widgetHost, {
-        sitekey: widgetHost.dataset.sitekey ?? '',
-        action: 'contact',
-        size: 'flexible',
-        theme: 'light',
-        callback: () => setVerified(true),
-        'expired-callback': () => {
-          setVerified(false);
-          status.textContent = 'The verification expired. Please complete it again.';
-        },
-        'error-callback': () => {
-          setVerified(false);
-          status.textContent = "The verification couldn't load. Please try again later.";
-        },
+    mounting ??= loadTurnstile()
+      .then((api) => {
+        turnstile = api;
+        widgetId = api.render(widgetHost, {
+          sitekey: widgetHost.dataset.sitekey ?? '',
+          action: 'contact',
+          size: 'flexible',
+          theme: 'light',
+          callback: () => setVerified(true),
+          'expired-callback': () => {
+            setVerified(false);
+            status.textContent = 'The verification expired. Please complete it again.';
+          },
+          'error-callback': () => {
+            setVerified(false);
+            status.textContent = "The verification couldn't load. Please try again later.";
+          },
+        });
+      })
+      .catch(() => {
+        // Let the next open try again.
+        mounting = null;
+        status.textContent = "The verification couldn't load. Please try again later.";
       });
-    } catch {
-      status.textContent = "The verification couldn't load. Please try again later.";
-    }
   };
 
   const open = () => {
@@ -126,7 +139,7 @@ export function initContactForm(root: HTMLElement) {
     input('name')?.focus();
     // Keep the page from scrolling behind the modal.
     document.documentElement.style.overflow = 'hidden';
-    void mountWidget();
+    mountWidget();
   };
 
   for (const opener of openers) opener.addEventListener('click', open);
