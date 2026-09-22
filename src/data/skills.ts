@@ -20,6 +20,7 @@ export const skills: Skills = {
     {
       name: 'Tech',
       items: [
+        'Astro',
         'Claude Code',
         'Cursor',
         'Docker',
@@ -45,6 +46,7 @@ export const skills: Skills = {
       name: 'Topics',
       items: [
         'Accessibility',
+        'Agile/Scrum',
         'AI-assisted workflows',
         'APIs',
         'CI/CD',
