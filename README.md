@@ -6,7 +6,8 @@ of 5,000 particles behind it morphs to the shape of whichever section covers mos
 
 ## Stack
 
-Astro + TypeScript, Tailwind CSS v4, Oxlint, Oxfmt, Lefthook, Playwright + axe-core.
+Astro + TypeScript, React (for the Work accordion), Tailwind CSS v4, Oxlint, Oxfmt, Lefthook,
+Playwright + axe-core.
 
 ## Scripts
 
@@ -26,6 +27,7 @@ once the folder is a git repo (or run `pnpm exec lefthook install`).
 
 - `src/data/*.ts` — all copy: section text, list items, contact links
 - `src/components/stages/` — one component per section, in `index.ts` order
+- `src/components/ProjectAccordion.tsx` — the Work projects as a React accordion, hydrated on scroll
 - `src/components/ParticleStory.astro` — the page: fixed canvas and header, sections, contact dialog
 - `src/scripts/shapes.ts` — particle target shapes
 - `src/scripts/particles.ts` — canvas renderer (projection, timed morphing, intro fly-in)

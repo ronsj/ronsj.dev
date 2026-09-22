@@ -1,26 +1,11 @@
 ---
 import { work } from "../../data/work";
+import ProjectAccordion from "../ProjectAccordion";
 import StageFrame from "./StageFrame.astro";
 ---
 
 <StageFrame id={work.id} shape="orbits" kicker={work.kicker} title={work.title}>
   <p class="max-w-[46ch] text-[clamp(18px,1.6vw,22px)] leading-[1.45] text-pretty text-body">{work.body}</p>
-  <ul class="mt-5 flex flex-col gap-2">
-    {
-      work.projects.map((p) => (
-        <li class="grid grid-cols-[auto_1fr] items-baseline gap-3.5 border-t border-rule pt-2 text-sm leading-[1.35] sm:text-lg">
-          <span aria-hidden="true" class="font-mono font-medium text-accent-text">
-            ~
-          </span>
-          <span class="flex md:gap-3.5 items-baseline flex-wrap flex-col md:flex-row gap-1">
-            <a href={p.url} class="link-underline" target="_blank" rel="noopener noreferrer">
-              <strong class="font-medium">{p.name}</strong>
-              <span class="sr-only"> (opens in a new tab)</span>
-            </a>
-            <span class="leading-[1.7] text-muted">{p.summary}</span>
-          </span>
-        </li>
-      ))
-    }
-  </ul>
+  {/* Hydrates once the section scrolls near; until then it renders closed, with every description still in the markup. */}
+  <ProjectAccordion client:visible projects={work.projects} />
 </StageFrame>
