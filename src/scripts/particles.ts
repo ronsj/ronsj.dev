@@ -63,6 +63,7 @@ export class ParticleField {
   private dpr = 1;
   private t0 = performance.now();
   private raf = 0;
+  private started = false;
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -116,6 +117,7 @@ export class ParticleField {
     this.to = this.set.shapes[i]!;
     this.toW = this.weightsOf(i);
     this.morphAt = now;
+    this.drawOnce();
   }
 
   resize() {
@@ -124,9 +126,15 @@ export class ParticleField {
     this.h = this.canvas.clientHeight;
     this.canvas.width = Math.round(this.w * this.dpr);
     this.canvas.height = Math.round(this.h * this.dpr);
+    this.drawOnce();
   }
 
   start() {
+    this.started = true;
+    if (this.reduced) {
+      this.drawOnce();
+      return;
+    }
     const loop = (now: number) => {
       this.raf = requestAnimationFrame(loop);
       this.draw(now);
@@ -135,7 +143,18 @@ export class ParticleField {
   }
 
   stop() {
+    this.started = false;
     cancelAnimationFrame(this.raf);
+  }
+
+  /**
+   * With reduced motion nothing moves between changes, so instead of a frame loop the field is drawn
+   * once when it starts and again after each change of section or size.
+   */
+  private drawOnce() {
+    if (!this.reduced || !this.started) return;
+    cancelAnimationFrame(this.raf);
+    this.raf = requestAnimationFrame((now) => this.draw(now));
   }
 
   private weightsOf(i: number): Weights {
