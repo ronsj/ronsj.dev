@@ -26,19 +26,19 @@ export const work: Work = {
       url: 'https://peets.com',
       summary: 'Subscription onboarding development',
       description:
-        'I built theme sections across the storefront, from landing pages for subscriptions with custom subscription configurators to the interactive product listing pages: carousels, product grids and filters with pagination. I also built the main product configurator, which brings one-time and subscription purchases together in a single flow. On top of that I worked on the cart and its upsells.',
+        'I built theme sections across the storefront, from landing pages for subscriptions with custom subscription configurators to the interactive product listing pages: carousels, product grids and filters with pagination. I also built the main product configurator, which brings one-time and subscription purchases together in a single flow.',
     },
     {
       name: 'SYRN',
       url: 'https://syrn.com',
-      summary: 'Initial Shopify theme implementation',
+      summary: 'Initial Shopify store build and theme scaffolding',
       description:
         'SYRN was a brand new brand launching its first online store, and I scaffolded the project from day one: the Shopify theme itself and the developer tooling around it, from Vite to linting, formatting and testing. I also set up the store backend, modelling the content with metafields and metaobjects. From there I built the initial home page and product page sections, including a set brought to life with GSAP animations.',
     },
     {
       name: 'Barnes & Noble',
       url: 'https://barnesandnoble.com',
-      summary: 'Headless Shopify theme & CMS development',
+      summary: 'Headless Shopify & CMS integration',
       description:
         'Barnes & Noble, one of the largest e-commerce brands in the world, moved its online store to headless Shopify with Sanity as the CMS, and I worked on that store and content migration. I integrated content from Sanity into Shopify sections, so the storefront could draw on both. I also worked on the product page configurator.',
     },
