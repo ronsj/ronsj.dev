@@ -7,6 +7,11 @@ import react from '@astrojs/react';
 export default defineConfig({
   site: 'https://ronsj.dev',
   adapter: cloudflare(),
+  build: {
+    // One page, one 5 KB (gzipped) stylesheet that every section needs at once: inline it rather than
+    // block first paint on a separate request.
+    inlineStylesheets: 'always',
+  },
   vite: {
     plugins: [tailwindcss()],
   },
