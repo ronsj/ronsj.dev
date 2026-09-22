@@ -57,9 +57,7 @@ export class ParticleField {
   private readonly cloudAt: number;
   private readonly px: Float32Array;
   private readonly py: Float32Array;
-  private readonly pz: Float32Array;
   private readonly pf: Float32Array;
-  private readonly order: Uint32Array;
   private w = 0;
   private h = 0;
   private dpr = 1;
@@ -86,9 +84,7 @@ export class ParticleField {
     this.fromW = this.toW = this.weightsOf(this.section);
     this.px = new Float32Array(this.n);
     this.py = new Float32Array(this.n);
-    this.pz = new Float32Array(this.n);
     this.pf = new Float32Array(this.n);
-    this.order = new Uint32Array(this.n);
     this.resize();
   }
 
@@ -153,7 +149,7 @@ export class ParticleField {
   }
 
   private draw(now: number) {
-    const { ctx, n, w: W, h: H, dpr, px, py, pz, pf, order } = this;
+    const { ctx, n, w: W, h: H, dpr, px, py, pf } = this;
     const { scatter: S, seeds } = this.set;
     const A = this.from;
     const B = this.to;
@@ -215,18 +211,16 @@ export class ParticleField {
       const f = 3.2 / (3.2 + z2);
       px[i] = cxs + x2 * f * scale;
       py[i] = cys - y2 * f * scale;
-      pz[i] = z2;
       pf[i] = f;
-      order[i] = i;
     }
-    order.sort((a, b) => pz[a]! - pz[b]!);
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
     ctx.fillStyle = this.color;
     const size = wide ? 2.1 : 1.68;
-    for (let j = 0; j < n; j++) {
-      const i = order[j]!;
+    // Every dot is the same colour, so with source-over blending the paint order can't change the picture
+    // and there's no need to sort by depth.
+    for (let i = 0; i < n; i++) {
       const f = pf[i]!;
       ctx.globalAlpha = Math.max(0.15, Math.min(0.95, 0.25 + (f - 0.6) * 1.6)) * fade;
       ctx.beginPath();
