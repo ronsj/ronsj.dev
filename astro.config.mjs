@@ -3,6 +3,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, fontProviders } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
 import react from '@astrojs/react';
+import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
   site: 'https://ronsj.dev',
@@ -49,5 +50,5 @@ export default defineConfig({
     },
   ],
 
-  integrations: [react()],
+  integrations: [react(), sitemap()],
 });
