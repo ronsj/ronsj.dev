@@ -7,6 +7,6 @@ export interface Intro {
 
 export const intro: Intro = {
   id: 'intro',
-  role: 'Frontend & Fullstack Developer',
+  role: 'Fullstack Developer',
   name: 'Ron San Jose',
 };
