@@ -28,7 +28,7 @@ once the folder is a git repo (or run `pnpm exec lefthook install`).
 - `src/data/*.ts` — all copy: section text, list items, contact links
 - `src/components/stages/` — one component per section, in `index.ts` order
 - `src/components/ProjectAccordion.tsx` — the Work projects as a React accordion, hydrated on scroll
-- `src/components/PageContainer.astro` — the page: fixed canvas and header, sections, contact dialog
+- `src/components/PageContainer.astro` — the page: fixed canvas, `Header.astro`, the sections, `ContactFormDialog.astro`
 - `src/scripts/shapes.ts` — particle target shapes
 - `src/scripts/particles.ts` — canvas renderer (projection, timed morphing, intro fly-in)
 - `src/scripts/stages.ts` — which section covers most of the viewport → particle shape, nav jumps
