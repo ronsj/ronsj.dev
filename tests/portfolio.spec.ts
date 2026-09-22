@@ -140,31 +140,53 @@ test('tabbing down the page reaches the contact links and brings their section i
   await expect(story(page)).toHaveAttribute('data-current', 'contact');
 });
 
-test('the header button switches the theme and the choice survives a reload', async ({ page }) => {
+test('the header button cycles auto, light and dark and the choice survives a reload', async ({
+  page,
+}) => {
   const html = page.locator('html');
-  const toggle = page.getByRole('button', { name: 'Dark theme' });
+  const toggle = page.getByRole('button', { name: /^Theme:/ });
   const themeColor = () =>
     page.locator('head meta[name="theme-color"]').first().getAttribute('content');
-  // No stored choice, so the theme is the system's; Playwright's default is light.
+  // No stored choice, so the mode is auto and the theme is the system's; Playwright's default is light.
+  await expect(html).toHaveAttribute('data-mode', 'auto');
   await expect(html).toHaveAttribute('data-theme', 'light');
-  await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+  await expect(toggle).toHaveAccessibleName('Theme: auto');
 
   await toggle.click();
+  await expect(html).toHaveAttribute('data-mode', 'light');
+  await expect(html).toHaveAttribute('data-theme', 'light');
+  await expect(toggle).toHaveAccessibleName('Theme: light');
+
+  await toggle.click();
+  await expect(html).toHaveAttribute('data-mode', 'dark');
   await expect(html).toHaveAttribute('data-theme', 'dark');
-  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  await expect(toggle).toHaveAccessibleName('Theme: dark');
   expect(await themeColor()).toBe('#1c2230');
   await expect(html).toHaveCSS('background-color', 'rgb(28, 34, 48)');
 
   await page.reload();
+  await expect(html).toHaveAttribute('data-mode', 'dark');
   await expect(html).toHaveAttribute('data-theme', 'dark');
-  await expect(page.getByRole('button', { name: 'Dark theme' })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
 
-  await page.getByRole('button', { name: 'Dark theme' }).click();
+  await toggle.click();
+  await expect(html).toHaveAttribute('data-mode', 'auto');
   await expect(html).toHaveAttribute('data-theme', 'light');
   expect(await themeColor()).toBe('#f5f5f5');
+});
+
+test.describe('dark system preference', () => {
+  test.use({ colorScheme: 'dark' });
+
+  test('auto follows the system, and an explicit light choice overrides it', async ({ page }) => {
+    const html = page.locator('html');
+    await expect(html).toHaveAttribute('data-mode', 'auto');
+    await expect(html).toHaveAttribute('data-theme', 'dark');
+    await page.getByRole('button', { name: /^Theme:/ }).click();
+    await expect(html).toHaveAttribute('data-mode', 'light');
+    await expect(html).toHaveAttribute('data-theme', 'light');
+    await page.reload();
+    await expect(html).toHaveAttribute('data-theme', 'light');
+  });
 });
 
 test('every section is a labelled region', async ({ page }) => {
