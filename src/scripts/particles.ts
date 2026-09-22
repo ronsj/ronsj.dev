@@ -1,29 +1,29 @@
 import { buildShapes, type ShapeName, type ShapeSet } from './shapes';
 
 export interface ParticleOptions {
-  /** The resting shape of each stage, in page order. */
+  /** The resting shape of each section, in page order. */
   shapes: readonly ShapeName[];
-  /** The stage the field rests on to begin with. */
-  stage?: number;
+  /** The section the field rests on to begin with. */
+  section?: number;
   count?: number;
   rotationSpeed?: number;
   color?: string;
   reducedMotion?: boolean;
 }
 
-/** Per-stage amounts that morph alongside the particles. */
+/** Per-section amounts that morph alongside the particles. */
 interface Weights {
   /** How much of the hero cloud is showing; it's bigger than the other shapes, so the view zooms out. */
   cloud: number;
   /** How much of the solar system is showing; it's drawn tilted on its axis. */
   orbits: number;
-  /** Stage index, which adds a little extra spin as the page goes on. */
+  /** Section index, which adds a little extra spin as the page goes on. */
   turn: number;
 }
 
 /** Roll applied to the solar system after it spins, so it turns about its own tilted axis (radians). */
 const ORBITS_ROLL = -0.42;
-/** How long a morph from one stage's shape to another takes. */
+/** How long a morph from one section's shape to another takes. */
 const MORPH_MS = 1400;
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 const smoothstep = (t: number) => t * t * (3 - 2 * t);
@@ -32,12 +32,12 @@ const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 const stagger = (t: number, seed: number) => clamp01(t * 1.25 - seed * 0.25);
 
 /**
- * Particle field that rests on one stage's shape at a time. `setStage` morphs it to another stage's
- * shape over MORPH_MS; a change of stage mid-morph carries on from wherever the particles are.
+ * Particle field that rests on one section's shape at a time. `setSection` morphs it to another section's
+ * shape over MORPH_MS; a change of section mid-morph carries on from wherever the particles are.
  */
 export class ParticleField {
-  private stage: number;
-  /** Where each particle is morphing from: a copy of a stage's shape, or a snapshot taken mid-morph. */
+  private section: number;
+  /** Where each particle is morphing from: a copy of a section's shape, or a snapshot taken mid-morph. */
   private readonly from: Float32Array;
   private to: Float32Array;
   private fromW: Weights;
@@ -51,9 +51,9 @@ export class ParticleField {
   private readonly color: string;
   private readonly reduced: boolean;
   private readonly set: ShapeSet;
-  /** Index of the solar system stage (-1 if no stage uses it). */
+  /** Index of the solar system section (-1 if no section uses it). */
   private readonly orbitsAt: number;
-  /** Index of the hero cloud stage (-1 if no stage uses it). */
+  /** Index of the hero cloud section (-1 if no section uses it). */
   private readonly cloudAt: number;
   private readonly px: Float32Array;
   private readonly py: Float32Array;
@@ -80,10 +80,10 @@ export class ParticleField {
     this.set = buildShapes(this.n, opts.shapes);
     this.orbitsAt = opts.shapes.indexOf('orbits');
     this.cloudAt = opts.shapes.indexOf('cloud');
-    this.stage = Math.max(0, Math.min(opts.shapes.length - 1, opts.stage ?? 0));
-    this.to = this.set.shapes[this.stage]!;
+    this.section = Math.max(0, Math.min(opts.shapes.length - 1, opts.section ?? 0));
+    this.to = this.set.shapes[this.section]!;
     this.from = new Float32Array(this.to);
-    this.fromW = this.toW = this.weightsOf(this.stage);
+    this.fromW = this.toW = this.weightsOf(this.section);
     this.px = new Float32Array(this.n);
     this.py = new Float32Array(this.n);
     this.pz = new Float32Array(this.n);
@@ -92,9 +92,9 @@ export class ParticleField {
     this.resize();
   }
 
-  /** Morph to the shape of stage `i`. */
-  setStage(i: number) {
-    if (i === this.stage || !this.set.shapes[i]) return;
+  /** Morph to the shape of section `i`. */
+  setSection(i: number) {
+    if (i === this.section || !this.set.shapes[i]) return;
     const now = performance.now();
     const t = this.morphT(now);
     const { from, to, n } = this;
@@ -116,7 +116,7 @@ export class ParticleField {
       from.set(to);
       this.fromW = this.toW;
     }
-    this.stage = i;
+    this.section = i;
     this.to = this.set.shapes[i]!;
     this.toW = this.weightsOf(i);
     this.morphAt = now;

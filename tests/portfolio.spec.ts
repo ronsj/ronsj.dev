@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { scrollToStage, story } from './helpers';
+import { scrollToSection, story } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -35,7 +35,7 @@ test('the section covering most of the viewport becomes current', async ({ page 
     ['contact', 'Let’s connect.'],
   ] as const;
   for (const [i, [id, title]] of sections.entries()) {
-    await scrollToStage(page, i);
+    await scrollToSection(page, i);
     await expect(page.locator(`#${id}-title`)).toHaveText(title);
     await expect(page.locator(`#${id}-title`)).toBeInViewport();
     await expect(story(page)).toHaveAttribute('data-current', id);

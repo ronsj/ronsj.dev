@@ -2,17 +2,17 @@
 import type { ShapeName } from "../../scripts/shapes";
 
 /**
- * The shell every stage shares: a full-height `data-stage` section the scroll script watches, the
- * kicker and the optically aligned heading. What goes under the heading is up to each stage (the slot).
+ * The shell every section shares: a full-height `data-section` section the scroll script watches, the
+ * kicker and the optically aligned heading. What goes under the heading is up to each section (the slot).
  */
 interface Props {
   /** Anchor id the nav jumps to. */
   id: string;
-  /** The shape the particle field settles into while this stage covers most of the viewport. */
+  /** The shape the particle field settles into while this section covers most of the viewport. */
   shape: ShapeName;
   kicker: string;
   title: string;
-  /** Only the first stage on the page should be an h1. */
+  /** Only the first section on the page should be an h1. */
   level?: "h1" | "h2";
   /** Size/wrap classes for the heading; the default suits a multi-word title. */
   titleClass?: string;
@@ -40,7 +40,7 @@ const opticalOffset = `margin-left: -${((bearings[title[0] ?? ""] ?? 0) * OPTICA
 
 <section
   id={id}
-  data-stage
+  data-section
   data-shape={shape}
   aria-labelledby={titleId}
   class="flex min-h-svh flex-col justify-center pt-24 pb-20"

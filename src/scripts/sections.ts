@@ -8,9 +8,9 @@ const SCROLL_KEYS = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home
  * Keeps the particle field resting on the shape of whichever section covers most of the viewport.
  * In-page nav jumps morph straight to the destination rather than through every section on the way.
  */
-export function initStages(root: HTMLElement) {
+export function initSections(root: HTMLElement) {
   const canvas = root.querySelector<HTMLCanvasElement>('[data-canvas]');
-  const sections = [...root.querySelectorAll<HTMLElement>('[data-stage]')];
+  const sections = [...root.querySelectorAll<HTMLElement>('[data-section]')];
   if (!canvas || sections.length === 0) return;
 
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -38,7 +38,7 @@ export function initStages(root: HTMLElement) {
     return best;
   };
 
-  let stage = dominant();
+  let section = dominant();
   // The current section is mirrored onto the root so it can be observed without reading the canvas.
   const mark = (i: number) => {
     root.dataset.current = sections[i]!.id;
@@ -48,7 +48,7 @@ export function initStages(root: HTMLElement) {
   try {
     field = new ParticleField(canvas, {
       shapes,
-      stage,
+      section,
       count: Number(root.dataset.particles) || 5000,
       color: accent || undefined,
       reducedMotion: motion.matches,
@@ -58,10 +58,10 @@ export function initStages(root: HTMLElement) {
     canvas.hidden = true;
   }
 
-  const setStage = (i: number) => {
-    if (i === stage) return;
-    stage = i;
-    field?.setStage(i);
+  const setSection = (i: number) => {
+    if (i === section) return;
+    section = i;
+    field?.setSection(i);
     mark(i);
   };
 
@@ -93,7 +93,7 @@ export function initStages(root: HTMLElement) {
       }
       unpin();
     }
-    setStage(i);
+    setSection(i);
   };
 
   const scrollToSection = (i: number) => {
@@ -101,7 +101,7 @@ export function initStages(root: HTMLElement) {
     const smooth = !motion.matches;
     // Only pin when there's a journey: a scroll that's already at its target fires no scroll events.
     if (smooth && dominant() !== i) pinned = i;
-    setStage(i);
+    setSection(i);
     sections[i]!.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
   };
 
@@ -137,5 +137,5 @@ export function initStages(root: HTMLElement) {
     readScroll();
   });
 
-  mark(stage);
+  mark(section);
 }

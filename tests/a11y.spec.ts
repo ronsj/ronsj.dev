@@ -1,6 +1,6 @@
 import { AxeBuilder } from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { scrollToStage, story } from './helpers';
+import { scrollToSection, story } from './helpers';
 
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'];
 
@@ -39,14 +39,14 @@ async function audit(page: Page) {
   expect(header.incomplete.filter((r) => r.id === 'color-contrast')).toEqual([]);
 }
 
-for (const [stage, name] of [
+for (const [section, name] of [
   [0, 'intro'],
   [4, 'skills'],
   [5, 'contact'],
 ] as const) {
   test(`no axe violations with the ${name} section on screen`, async ({ page }) => {
     await page.goto('/');
-    await scrollToStage(page, stage);
+    await scrollToSection(page, section);
     await expect(story(page)).toHaveAttribute('data-current', name);
     await audit(page);
   });
@@ -57,7 +57,7 @@ test.describe('reduced motion', () => {
 
   test('still tracks the current section', async ({ page }) => {
     await page.goto('/');
-    await scrollToStage(page, 1);
+    await scrollToSection(page, 1);
     await expect(story(page)).toHaveAttribute('data-current', 'about');
     await expect(page.getByRole('heading', { name: 'Pixels with purpose.' })).toBeInViewport();
     await audit(page);

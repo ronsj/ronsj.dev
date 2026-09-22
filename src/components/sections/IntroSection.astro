@@ -1,11 +1,11 @@
 ---
 import { intro } from "../../data/intro";
-import StageFrame from "./StageFrame.astro";
+import SectionFrame from "./SectionFrame.astro";
 // The name always stays on one line: size it from the column width (the name is ~6.7em wide).
 const titleClass = "text-[clamp(40px,14.5cqi,96px)] whitespace-nowrap lg:text-[96px]";
 ---
 
-<StageFrame
+<SectionFrame
   id={intro.id} shape="cloud"
   kicker={intro.role}
   title={intro.name}

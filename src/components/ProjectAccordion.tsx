@@ -6,7 +6,7 @@ interface Props {
 }
 
 /**
- * The projects on the Work stage as an accordion: each row is a button that opens the project's
+ * The projects on the Work section as an accordion: each row is a button that opens the project's
  * description and a link to the site. One project is open at a time; opening another closes it.
  * Follows the WAI-ARIA accordion pattern, including Up/Down/Home/End between the headers.
  */

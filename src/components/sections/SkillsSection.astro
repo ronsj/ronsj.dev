@@ -1,9 +1,9 @@
 ---
 import { skills } from "../../data/skills";
-import StageFrame from "./StageFrame.astro";
+import SectionFrame from "./SectionFrame.astro";
 ---
 
-<StageFrame id={skills.id} shape="layers" kicker={skills.kicker} title={skills.title}>
+<SectionFrame id={skills.id} shape="layers" kicker={skills.kicker} title={skills.title}>
   <p class="max-w-[46ch] text-[clamp(18px,1.6vw,22px)] leading-[1.45] text-pretty text-body">{skills.body}</p>
   <dl class="mt-[18px] flex flex-col gap-3">
     {
@@ -41,7 +41,7 @@ import StageFrame from "./StageFrame.astro";
       ))
     }
   </dl>
-</StageFrame>
+</SectionFrame>
 
 <script>
   import { initDragScroll } from '../../scripts/drag-scroll';

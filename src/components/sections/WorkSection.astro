@@ -1,11 +1,11 @@
 ---
 import { work } from "../../data/work";
 import ProjectAccordion from "../ProjectAccordion";
-import StageFrame from "./StageFrame.astro";
+import SectionFrame from "./SectionFrame.astro";
 ---
 
-<StageFrame id={work.id} shape="orbits" kicker={work.kicker} title={work.title}>
+<SectionFrame id={work.id} shape="orbits" kicker={work.kicker} title={work.title}>
   <p class="max-w-[46ch] text-[clamp(18px,1.6vw,22px)] leading-[1.45] text-pretty text-body">{work.body}</p>
   {/* Hydrates once the section scrolls near; until then it renders closed, with every description still in the markup. */}
   <ProjectAccordion client:visible projects={work.projects} />
-</StageFrame>
+</SectionFrame>

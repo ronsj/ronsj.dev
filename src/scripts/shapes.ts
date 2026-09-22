@@ -197,7 +197,7 @@ function scatter(n: number): Shape {
   });
 }
 
-/** Every shape a stage can rest on. Each stage names its own via `data-shape`. */
+/** Every shape a section can rest on. Each section names its own via `data-shape`. */
 const builders = { cloud, sphere, orbits, helix, wave, layers, galaxy } satisfies Record<
   string,
   (n: number) => Shape
@@ -209,7 +209,7 @@ export const isShapeName = (v: unknown): v is ShapeName =>
   typeof v === 'string' && Object.hasOwn(builders, v);
 
 export interface ShapeSet {
-  /** One target shape per content stage, in order. */
+  /** One target shape per content section, in order. */
   shapes: Shape[];
   scatter: Shape;
   seeds: Shape;
