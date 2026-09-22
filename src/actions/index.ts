@@ -25,14 +25,14 @@ export const server = {
         .min(1, 'Please write a message.')
         .max(5000, 'Please keep your message under 5,000 characters.'),
       // Honeypot: hidden from people, filled in by bots. Anything here means we quietly drop the mail.
-      company: z.string().nullish(),
+      topic: z.string().nullish(),
       // Turnstile token, injected into the form by the widget.
       'cf-turnstile-response': z.string().nullish(),
     }),
-    handler: async ({ name, email, message, company, 'cf-turnstile-response': token }, context) => {
+    handler: async ({ name, email, message, topic, 'cf-turnstile-response': token }, context) => {
       // Drop honeypot hits before Turnstile so bots get the same quiet success either way and we
       // don't spend a siteverify round trip on them.
-      if (company) return { ok: true };
+      if (topic) return { ok: true };
       await requireTurnstile(
         token,
         'contact',

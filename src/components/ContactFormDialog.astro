@@ -69,9 +69,13 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "0x4AAAAAA
       ></textarea>
       <p id="email-message-error" data-error-for="message" hidden class="text-sm text-error"></p>
     </div>
-    {/* Honeypot: invisible to people and skipped by assistive tech; bots tend to fill it. */}
+    {/*
+      Honeypot: invisible to people and skipped by assistive tech; bots tend to fill it. Its name and
+      label are deliberately not ones browser autofill recognises (like "company"), which can fill hidden
+      fields and would get a real message quietly dropped.
+    */}
     <div class="hidden" aria-hidden="true">
-      <label>Company <input name="company" type="text" tabindex="-1" autocomplete="off" /></label>
+      <label>Topic <input name="topic" type="text" tabindex="-1" autocomplete="off" /></label>
     </div>
     {/* Turnstile renders here on demand; it adds its own hidden cf-turnstile-response input to the form. */}
     <div data-turnstile data-sitekey={turnstileSiteKey} class="min-h-[65px]"></div>
