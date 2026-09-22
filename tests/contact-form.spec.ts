@@ -87,6 +87,25 @@ test('a valid submission sends and shows the confirmation', async ({ page }) => 
   await expect(dialog).toBeHidden();
 });
 
+test.describe('dark theme', () => {
+  test.use({ colorScheme: 'dark' });
+
+  test('the dialog and its validation errors have no axe violations', async ({ page }) => {
+    const dialog = await openDialog(page);
+    await dialog.getByLabel('Name', { exact: true }).fill('Test Person');
+    await dialog.getByLabel('Email', { exact: true }).fill('a@b');
+    await dialog.getByLabel('Message', { exact: true }).fill('Hello');
+    await awaitVerified(dialog);
+    await dialog.getByRole('button', { name: 'Send' }).click();
+    await expect(dialog.getByText('Please enter a valid email address.')).toBeVisible();
+
+    await hideCanvas(page);
+    const results = await new AxeBuilder({ page }).withTags(AXE_TAGS).include('dialog').analyze();
+    expect(results.violations).toEqual([]);
+    expect(results.incomplete.filter((r) => r.id === 'color-contrast')).toEqual([]);
+  });
+});
+
 test('the action rejects a submission with no Turnstile token', async ({ request, baseURL }) => {
   const response = await request.post('/_actions/sendEmail', {
     headers: { Accept: 'application/json', Origin: baseURL! },

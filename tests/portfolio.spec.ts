@@ -140,6 +140,33 @@ test('tabbing down the page reaches the contact links and brings their section i
   await expect(story(page)).toHaveAttribute('data-current', 'contact');
 });
 
+test('the header button switches the theme and the choice survives a reload', async ({ page }) => {
+  const html = page.locator('html');
+  const toggle = page.getByRole('button', { name: 'Dark theme' });
+  const themeColor = () =>
+    page.locator('head meta[name="theme-color"]').first().getAttribute('content');
+  // No stored choice, so the theme is the system's; Playwright's default is light.
+  await expect(html).toHaveAttribute('data-theme', 'light');
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+
+  await toggle.click();
+  await expect(html).toHaveAttribute('data-theme', 'dark');
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  expect(await themeColor()).toBe('#1c2230');
+  await expect(html).toHaveCSS('background-color', 'rgb(28, 34, 48)');
+
+  await page.reload();
+  await expect(html).toHaveAttribute('data-theme', 'dark');
+  await expect(page.getByRole('button', { name: 'Dark theme' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+
+  await page.getByRole('button', { name: 'Dark theme' }).click();
+  await expect(html).toHaveAttribute('data-theme', 'light');
+  expect(await themeColor()).toBe('#f5f5f5');
+});
+
 test('every section is a labelled region', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 2 })).toHaveCount(5);
   await expect(page.getByRole('region')).toHaveCount(6);
