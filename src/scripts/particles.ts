@@ -48,7 +48,7 @@ export class ParticleField {
   private readonly ctx: CanvasRenderingContext2D;
   private readonly n: number;
   private readonly spin: number;
-  private readonly color: string;
+  private color: string;
   private readonly reduced: boolean;
   private readonly set: ShapeSet;
   /** Index of the solar system section (-1 if no section uses it). */
@@ -117,6 +117,12 @@ export class ParticleField {
     this.to = this.set.shapes[i]!;
     this.toW = this.weightsOf(i);
     this.morphAt = now;
+    this.drawOnce();
+  }
+
+  /** Recolour the dots, e.g. when the theme changes. */
+  setColor(color: string) {
+    this.color = color;
     this.drawOnce();
   }
 

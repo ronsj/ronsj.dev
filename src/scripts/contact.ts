@@ -1,4 +1,5 @@
 import { actions, isInputError } from 'astro:actions';
+import { currentTheme } from './theme';
 
 /** The subset of the Turnstile client API we use. Loaded on demand from challenges.cloudflare.com. */
 interface Turnstile {
@@ -110,7 +111,7 @@ export function initContactForm(root: HTMLElement) {
           sitekey: widgetHost.dataset.sitekey ?? '',
           action: 'contact',
           size: 'flexible',
-          theme: 'light',
+          theme: currentTheme(),
           callback: () => setVerified(true),
           'expired-callback': () => {
             setVerified(false);

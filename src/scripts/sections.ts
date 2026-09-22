@@ -14,7 +14,8 @@ export function initSections(root: HTMLElement) {
   if (!canvas || sections.length === 0) return;
 
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const accent = getComputedStyle(root).getPropertyValue('--color-accent').trim();
+  const readAccent = () => getComputedStyle(root).getPropertyValue('--color-accent').trim();
+  const accent = readAccent();
 
   // Each section declares the shape the particles rest on while it's the one on screen.
   const shapes: ShapeName[] = sections.map((el) => {
@@ -57,6 +58,12 @@ export function initSections(root: HTMLElement) {
   } catch {
     canvas.hidden = true;
   }
+
+  // The dots take the accent colour, which the theme redefines (see styles/global.css and scripts/theme.ts).
+  document.addEventListener('themechange', () => {
+    const color = readAccent();
+    if (color) field?.setColor(color);
+  });
 
   const setSection = (i: number) => {
     if (i === section) return;
