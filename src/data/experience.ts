@@ -21,7 +21,7 @@ export const experience: Experience = {
   body: 'Where I have been.',
   roles: [
     {
-      years: '2025–20__',
+      years: '2026–20__',
       title: 'Frontend Developer',
       company: 'RealDefense',
       companyUrl: 'https://realdefense.com',
