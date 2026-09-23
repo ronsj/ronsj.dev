@@ -2,10 +2,11 @@ export type Theme = 'light' | 'dark';
 /** What the visitor chose: a theme, or `auto` to follow the system preference. */
 export type Mode = Theme | 'auto';
 
-/** localStorage key for the chosen mode. Absent means `auto`, the default. */
+/** localStorage key for the chosen mode. Absent means `light`, the default. */
 const STORAGE_KEY = 'theme';
-/** The order the header button cycles through. */
-const MODES: Mode[] = ['auto', 'light', 'dark'];
+const DEFAULT_MODE: Mode = 'light';
+/** The order the header button cycles through, starting from the default. */
+const MODES: Mode[] = ['light', 'dark', 'auto'];
 
 const isMode = (v: unknown): v is Mode => v === 'auto' || v === 'light' || v === 'dark';
 
@@ -17,30 +18,30 @@ export function currentTheme(): Theme {
 function storedMode(): Mode {
   try {
     const v = localStorage.getItem(STORAGE_KEY);
-    return isMode(v) ? v : 'auto';
+    return isMode(v) ? v : DEFAULT_MODE;
   } catch {
-    return 'auto';
+    return DEFAULT_MODE;
   }
 }
 
 function storeMode(mode: Mode) {
   try {
-    if (mode === 'auto') localStorage.removeItem(STORAGE_KEY);
-    else localStorage.setItem(STORAGE_KEY, mode);
+    localStorage.setItem(STORAGE_KEY, mode);
   } catch {
     // Private mode or storage disabled: the choice lasts for this page only.
   }
 }
 
 /**
- * Wires every `data-theme-toggle` button under `root` to cycle auto → light → dark. `auto` follows the
- * system preference, including changes to it while the page is open. The mode goes on <html> as
+ * Wires every `data-theme-toggle` button under `root` to cycle light → dark → auto. `light` is the default
+ * for a first visit; the last choice is stored and restored on the next one. `auto` follows the system
+ * preference, including changes to it while the page is open. The mode goes on <html> as
  * `data-mode` (which icon the button shows) and the theme it resolves to as `data-theme` (what the
  * stylesheet reads). Each change is announced as a `themechange` event on `document` so canvas colours can follow.
  */
 export function initTheme(root: ParentNode) {
   const toggles = [...root.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]')];
-  const metas = [...document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')];
+  const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
   const system = window.matchMedia('(prefers-color-scheme: dark)');
 
   const apply = (mode: Mode) => {
@@ -52,7 +53,7 @@ export function initTheme(root: ParentNode) {
     const paper = getComputedStyle(document.documentElement)
       .getPropertyValue('--color-paper')
       .trim();
-    if (paper) for (const m of metas) m.content = paper;
+    if (paper && meta) meta.content = paper;
     document.dispatchEvent(new CustomEvent<Theme>('themechange', { detail: theme }));
   };
 

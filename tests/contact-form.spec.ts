@@ -91,6 +91,8 @@ test.describe('dark theme', () => {
   test.use({ colorScheme: 'dark' });
 
   test('the dialog and its validation errors have no axe violations', async ({ page }) => {
+    // The default mode is light, so opt into following the system before the page loads.
+    await page.addInitScript(() => localStorage.setItem('theme', 'auto'));
     const dialog = await openDialog(page);
     await dialog.getByLabel('Name', { exact: true }).fill('Test Person');
     await dialog.getByLabel('Email', { exact: true }).fill('a@b');

@@ -44,6 +44,8 @@ test.describe('dark theme', () => {
   test.use({ colorScheme: 'dark' });
 
   test('follows the system preference and has no axe violations', async ({ page }) => {
+    // The default mode is light, so opt into following the system before the page loads.
+    await page.addInitScript(() => localStorage.setItem('theme', 'auto'));
     await page.goto('/');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     await expect(story(page)).toHaveAttribute('data-current', 'intro');
