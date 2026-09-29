@@ -13,6 +13,7 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "test:e2e": "playwright test",
+    "og-image": "node scripts/og-image.mjs",
     "prepare": "lefthook install || true",
     "types": "wrangler types"
   },

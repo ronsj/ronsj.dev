@@ -8,14 +8,15 @@ Astro + TypeScript, React, Tailwind CSS v4, Oxlint, Oxfmt, Lefthook, Playwright.
 
 ## Scripts
 
-| Command         | What it does                                               |
-| --------------- | ---------------------------------------------------------- |
-| `pnpm dev`      | Dev server at http://localhost:4321                        |
-| `pnpm build`    | Type-check (`astro check`) and build to `dist/`            |
-| `pnpm preview`  | Serve the built site                                       |
-| `pnpm lint`     | Oxlint (`lint:fix` to autofix)                             |
-| `pnpm format`   | Oxfmt (`format:check` in CI)                               |
-| `pnpm test:e2e` | Build, serve, and run Playwright + axe on desktop & mobile |
+| Command         | What it does                                                      |
+| --------------- | ----------------------------------------------------------------- |
+| `pnpm dev`      | Dev server at http://localhost:4321                               |
+| `pnpm build`    | Type-check (`astro check`) and build to `dist/`                   |
+| `pnpm preview`  | Serve the built site                                              |
+| `pnpm lint`     | Oxlint (`lint:fix` to autofix)                                    |
+| `pnpm format`   | Oxfmt (`format:check` in CI)                                      |
+| `pnpm test:e2e` | Build, serve, and run Playwright + axe on desktop & mobile        |
+| `pnpm og-image` | Render `scripts/og-image.html` to the share image `public/og.png` |
 
 Lefthook runs Oxlint and Oxfmt on staged files before each commit. Hooks install on `pnpm install` once the folder is a git repo (or run `pnpm exec lefthook install`).
 
