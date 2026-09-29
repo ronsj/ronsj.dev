@@ -33,7 +33,7 @@ export const work: Work = {
       url: 'https://syrn.com',
       summary: 'Initial Shopify store build and theme scaffolding',
       description:
-        'SYRN was a brand new brand launching its first online store, and I scaffolded the project from day one: the Shopify theme itself and the developer tooling around it, from Vite to linting, formatting and testing. I also set up the store backend, modelling the content with metafields and metaobjects. From there I built the initial home page and product page sections, including a set brought to life with GSAP animations.',
+        'SYRN was launching its brand and first online store. I scaffolded the project from day one including the Shopify theme and the developer tooling around it. I also set up the store backend, modelling the content with metafields and metaobjects. From there I built the initial home page and product page sections, including a set brought to life with GSAP animations.',
     },
     {
       name: 'Barnes & Noble',
