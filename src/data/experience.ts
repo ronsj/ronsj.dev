@@ -6,6 +6,8 @@ export interface Role {
   companyUrl?: string;
   /** One line on the scope of the role, shown under the title. */
   scope?: string;
+  /** Marks the role held now, shown as a badge under the years. */
+  current?: boolean;
 }
 
 export interface Experience {
