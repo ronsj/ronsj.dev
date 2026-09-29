@@ -7,25 +7,33 @@ import SectionFrame from "./SectionFrame.astro";
   <ul class="mt-5 flex flex-col gap-2">
     {
       experience.roles.map((r) => (
-        <li class="grid grid-cols-[auto_1fr] items-baseline gap-3.5 border-t border-rule pt-2 text-sm leading-[1.35] sm:text-lg">
+        <li class="grid grid-cols-[auto_1fr] items-baseline gap-x-3.5 gap-y-1 border-t border-rule pt-2 text-sm leading-[1.35] sm:text-lg">
           <span class="font-mono font-medium text-accent-text">{r.years}</span>
-          <div class="min-w-0">
-            <span class="flex gap-1 items-baseline flex-wrap">
-              <strong class="font-medium text-ink">{r.title}</strong>
-              <span>@</span>
-              <span class="leading-[1.7] text-muted">
-                {r.companyUrl ? (
-                  <a href={r.companyUrl} class="link-underline" target="_blank" rel="noopener noreferrer">
-                    {r.company}
-                    <span class="sr-only"> (opens in a new tab)</span>
-                  </a>
-                ) : (
-                  r.company
-                )}
+          <span class="flex min-w-0 flex-wrap items-baseline gap-1">
+            <strong class="font-medium text-ink">{r.title}</strong>
+            <span>@</span>
+            <span class="leading-[1.7] text-muted">
+              {r.companyUrl ? (
+                <a href={r.companyUrl} class="link-underline" target="_blank" rel="noopener noreferrer">
+                  {r.company}
+                  <span class="sr-only"> (opens in a new tab)</span>
+                </a>
+              ) : (
+                r.company
+              )}
+            </span>
+          </span>
+          {/* The badge shares the scope's row and line box, so it sits centred on the scope's first line at any width. */}
+          {r.current && (
+            <span class="col-start-1 text-sm leading-[1.7] sm:text-base">
+              <span class="inline-block rounded-sm bg-accent px-1.5 py-0.5 align-middle font-mono text-[11px] leading-none font-medium tracking-[0.08em] text-white uppercase sm:text-xs">
+                Current
               </span>
             </span>
-            {r.scope && <p class="mt-1 max-w-[60ch] text-sm leading-[1.7] text-pretty text-body sm:text-base">{r.scope}</p>}
-          </div>
+          )}
+          {r.scope && (
+            <p class="col-start-2 max-w-[60ch] text-sm leading-[1.7] text-pretty text-body sm:text-base">{r.scope}</p>
+          )}
         </li>
       ))
     }
