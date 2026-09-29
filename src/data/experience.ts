@@ -34,12 +34,14 @@ export const experience: Experience = {
       title: 'Frontend Engineer',
       company: 'SDG',
       companyUrl: 'https://sdg.la',
+      scope: 'Individually contributed to frontend development for various client projects.',
     },
     {
       years: '2016–2022',
       title: 'Frontend Supervisor',
       company: 'Einstein',
       companyUrl: 'https://einsteinindustries.com',
+      scope: 'Led frontend development for a proprietary CMS.',
     },
   ],
 };
