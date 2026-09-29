@@ -4,6 +4,8 @@ export interface Role {
   title: string;
   company: string;
   companyUrl?: string;
+  /** One line on the scope of the role, shown under the title. */
+  scope?: string;
 }
 
 export interface Experience {
