@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Share image</title>
+    <!-- The site's fonts, from Google Fonts: rendering needs a network connection. -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@500&family=Manrope:wght@500&family=Sora:wght@800&display=block"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+      }
+      html,
+      body {
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+      }
+      /* Colours from the light theme in src/styles/global.css. */
+      body {
+        position: relative;
+        background: #f5f5f5;
+        color: #1c2230;
+      }
+      .kicker {
+        position: absolute;
+        top: 226px;
+        left: 98px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        font:
+          500 22px/1 'DM Mono',
+          monospace;
+        letter-spacing: 0.159em;
+        text-transform: uppercase;
+        color: #2b68d4;
+      }
+      .kicker svg {
+        position: relative;
+        top: -1px;
+        flex: none;
+      }
+      .name {
+        position: absolute;
+        top: 274px;
+        left: 90px;
+        font:
+          800 112px/1 'Sora',
+          sans-serif;
+        letter-spacing: -0.035em;
+        white-space: nowrap;
+      }
+      .site {
+        position: absolute;
+        top: 530px;
+        left: 96px;
+        font:
+          500 26px/1 'Manrope',
+          sans-serif;
+        color: #6a6e76;
+      }
+      .logo {
+        position: absolute;
+        top: 494px;
+        left: 1032px;
+        width: 72px;
+        height: 72px;
+      }
+    </style>
+  </head>
+  <body>
+    <p class="kicker">
+      <!-- The section kicker's wave, drawn taller and bolder to hold up at share-card size. -->
+      <svg width="35" height="12" viewBox="-0.55 0.41 27.1 9.31" fill="none" aria-hidden="true">
+        <path
+          d="M1 6.955C5 0.655 9 0.655 13 5.065S21 9.475 25 3.175"
+          stroke="currentColor"
+          stroke-width="3.1"
+          stroke-linecap="round"
+        />
+      </svg>
+      Fullstack Developer
+    </p>
+    <p class="name">Ron San Jose</p>
+    <p class="site">ronsj.dev</p>
+    <!-- public/favicon.svg -->
+    <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" aria-hidden="true">
+      <rect width="32" height="32" rx="6" fill="#1c2230" />
+      <path
+        d="M5 19c5-7 9-7 13-3s8 4 10-2"
+        stroke="#2f6fdd"
+        stroke-width="3"
+        fill="none"
+        stroke-linecap="round"
+      />
+    </svg>
+  </body>
+</html>
