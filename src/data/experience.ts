@@ -27,6 +27,7 @@ export const experience: Experience = {
       title: 'Frontend Developer',
       company: 'RealDefense',
       companyUrl: 'https://realdefense.com',
+      scope: 'Owned frontend architecture for new marketing sites and blogs.',
     },
     {
       years: '2022–2025',
