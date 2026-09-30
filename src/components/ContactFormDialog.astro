@@ -11,7 +11,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "0x4AAAAAA
 <dialog
   data-email-dialog
   aria-labelledby="email-dialog-title"
-  class="m-auto w-[min(100%-2rem,28rem)] rounded-md bg-paper p-6 text-ink shadow-2xl backdrop:bg-ink/40 dark:backdrop:bg-black/50 sm:p-8"
+  class="m-auto w-[min(100%-2rem,28rem)] rounded-md bg-paper p-6 text-ink shadow-2xl transition-[opacity,translate] duration-200 ease-out backdrop:bg-ink/40 backdrop:transition-opacity backdrop:duration-200 starting:open:translate-y-3 starting:open:opacity-0 starting:open:backdrop:opacity-0 motion-reduce:transition-none motion-reduce:backdrop:transition-none dark:backdrop:bg-black/50 sm:p-8"
 >
   <div class="mb-5 flex items-start justify-between gap-4">
     <h2 id="email-dialog-title" class="font-display text-2xl font-bold">Send me a message</h2>
