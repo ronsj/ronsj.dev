@@ -36,23 +36,19 @@ function sphere(n: number): Shape {
   });
 }
 
-/** Three stacked square planes with dense edges. */
+/** Three stacked discs with dense rims. */
 function layers(n: number): Shape {
-  const s = 1.05;
+  const R = 1.15;
   return make(n, () => {
     const y = (Math.floor(Math.random() * 3) - 1) * 0.5;
+    const a = Math.random() * TAU;
     if (Math.random() < 0.45) {
-      const t = rnd() * s;
-      const edges: [number, number][] = [
-        [t, s],
-        [t, -s],
-        [s, t],
-        [-s, t],
-      ];
-      const p = edges[Math.floor(Math.random() * 4)]!;
-      return [p[0] + rnd() * 0.012, y + rnd() * 0.012, p[1] + rnd() * 0.012];
+      const r = R + rnd() * 0.012;
+      return [Math.cos(a) * r, y + rnd() * 0.012, Math.sin(a) * r];
     }
-    return [rnd() * s, y + rnd() * 0.008, rnd() * s];
+    // sqrt keeps the fill uniform across the disc instead of bunching at the centre.
+    const r = Math.sqrt(Math.random()) * R;
+    return [Math.cos(a) * r, y + rnd() * 0.008, Math.sin(a) * r];
   });
 }
 
