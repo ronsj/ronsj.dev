@@ -32,6 +32,28 @@
     scrollbar-gutter: stable;
   }
 
+  /* The body paints the page itself, leaving the root background to show only in the scrollbar gutter. */
+  body {
+    @apply bg-paper min-h-dvh;
+  }
+
+  /*
+   * While a modal is open the page can't scroll, so the gutter drops its track and shows the root
+   * background, tinted to match the dialog's backdrop (which doesn't reach into the gutter). The
+   * transition lives here so the tint fades in with the backdrop and clears at once on close, as it does.
+   */
+  :root:has(dialog:modal) {
+    scrollbar-color: transparent transparent;
+    background-color: color-mix(in srgb, var(--color-ink) 40%, var(--color-paper));
+    @media (prefers-reduced-motion: no-preference) {
+      transition: background-color 200ms ease-out;
+    }
+  }
+
+  :root[data-theme='dark']:has(dialog:modal) {
+    background-color: color-mix(in srgb, black 50%, var(--color-paper));
+  }
+
   /* Dark theme: the light ink becomes the paper and the accent blue stays. Every text token meets AA (4.5:1) on it. */
   :root[data-theme='dark'] {
     color-scheme: dark;
