@@ -28,6 +28,8 @@
   html {
     @apply bg-paper text-ink font-sans antialiased;
     color-scheme: light;
+    /* Reserve the scrollbar's space so the page doesn't shift when a modal hides it. */
+    scrollbar-gutter: stable;
   }
 
   /* Dark theme: the light ink becomes the paper and the accent blue stays. Every text token meets AA (4.5:1) on it. */
