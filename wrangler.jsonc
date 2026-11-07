@@ -8,8 +8,21 @@
   "vars": {
     "CONTACT_FROM": "contact@ronsj.dev",
     "CONTACT_TO": "ronsj1@gmail.com",
-    // Turnstile siteverify must report one of these frontend hostnames. Never list localhost here;
-    // local overrides live in .dev.vars. The widget secret is the TURNSTILE_SECRET Worker secret.
+    // Turnstile siteverify must report one of these frontend hostnames or a subdomain of one. Never list
+    // localhost here; local overrides live in .dev.vars. The widget secret is the TURNSTILE_SECRET Worker secret.
     "TURNSTILE_HOSTNAMES": "ronsj.dev,ronsj-dev.ronsj1.workers.dev",
+  },
+  // Each PR gets a Preview (`wrangler preview --name pr-<number>`, see the preview job in CI) at
+  // pr-<number>-ronsj-dev.<subdomain>.workers.dev. Previews inherit nothing from production, so the
+  // vars and bindings are repeated here. TURNSTILE_SECRET comes from the Preview base config:
+  // `wrangler preview base-config secret put TURNSTILE_SECRET`.
+  "previews": {
+    "send_email": [{ "name": "EMAIL", "destination_address": "ronsj1@gmail.com" }],
+    "vars": {
+      "CONTACT_FROM": "contact@ronsj.dev",
+      "CONTACT_TO": "ronsj1@gmail.com",
+      // Previews live at pr-<number>-ronsj-dev.ronsj1.workers.dev, so allow the whole account subdomain here.
+      "TURNSTILE_HOSTNAMES": "ronsj1.workers.dev",
+    },
   },
 }

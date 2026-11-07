@@ -17,6 +17,18 @@ My single-page portfolio. Astro, React, Tailwind v4, deployed as a Cloudflare Wo
 
 Lefthook runs Oxlint and Oxfmt on staged files before each commit.
 
+## PR previews
+
+CI gives every same-repo PR a [Preview](https://developers.cloudflare.com/workers/previews/) of the Worker (`wrangler preview --name pr-<number>`) and comments the URL on the PR; closing the PR deletes it. Nothing is deployed: production only changes on a push to `main`.
+
+Previews inherit nothing from production, so their vars and bindings live in the `previews` block of `wrangler.jsonc`. Secrets can't, so `TURNSTILE_SECRET` is set once on the Preview base config and new Previews pick it up:
+
+```
+wrangler preview base-config secret put TURNSTILE_SECRET
+```
+
+The contact form on a Preview uses the real Turnstile widget and sends real mail.
+
 ## Contact form
 
 Posts to the `sendEmail` action (`src/actions/`), which checks a honeypot, verifies a Turnstile token, then sends via the `EMAIL` Worker binding.
@@ -25,7 +37,7 @@ Production needs:
 
 - Email Routing enabled on the `CONTACT_FROM` zone, with `CONTACT_TO` as a verified destination
 - The `TURNSTILE_SECRET` Worker secret (`wrangler secret put`)
-- Every hostname in `TURNSTILE_HOSTNAMES` allowed on the Turnstile sitekey
+- Every hostname in `TURNSTILE_HOSTNAMES` (production's and the `previews` block's) allowed on the Turnstile sitekey; an entry covers its subdomains, so `ronsj1.workers.dev` takes in the PR previews
 
 Locally, email is simulated (written to `.wrangler/tmp/email/`) and Turnstile uses Cloudflare's always-pass test keys from two gitignored files:
 

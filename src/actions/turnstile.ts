@@ -21,6 +21,10 @@ const fail = () =>
     message: "The verification didn't pass. Please try again.",
   });
 
+/** Same rule as the widget's own hostname allowlist: an entry covers itself and every subdomain. */
+const hostnameMatches = (hostname: string, allowed: string) =>
+  hostname === allowed || hostname.endsWith(`.${allowed}`);
+
 export async function requireTurnstile(
   token: string | null | undefined,
   action: string,
@@ -28,12 +32,10 @@ export async function requireTurnstile(
 ) {
   if (!token) throw fail();
 
-  const expectedHostnames = new Set(
-    (env.TURNSTILE_HOSTNAMES ?? '')
-      .split(',')
-      .map((hostname) => hostname.trim())
-      .filter(Boolean),
-  );
+  const expectedHostnames = (env.TURNSTILE_HOSTNAMES ?? '')
+    .split(',')
+    .map((hostname) => hostname.trim())
+    .filter(Boolean);
 
   // The secret is a Worker secret, not a var, so a deploy can go out without it. Fail loudly instead
   // of letting siteverify answer "missing-input-secret", which would look like every visitor is a bot.
@@ -66,8 +68,10 @@ export async function requireTurnstile(
   // secret never sets this flag, so production always enforces the action.
   const testing = result.metadata?.result_with_testing_key === true;
   const actionOk = testing || result.action === action;
+  const hostname = result.hostname;
   const hostnameOk =
-    expectedHostnames.size === 0 || (!!result.hostname && expectedHostnames.has(result.hostname));
+    expectedHostnames.length === 0 ||
+    (!!hostname && expectedHostnames.some((allowed) => hostnameMatches(hostname, allowed)));
   if (!result.success || !actionOk || !hostnameOk) {
     console.warn('Turnstile: rejected', {
       codes: result['error-codes'],
