@@ -8,6 +8,9 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   site: 'https://ronsj.dev',
   adapter: cloudflare(),
+  // Nothing uses sessions, and leaving them on makes the adapter add a SESSION KV binding that PR
+  // Previews can't deploy without a namespace id (production auto-provisions one; Previews don't).
+  session: false,
   build: {
     // One page, one 5 KB (gzipped) stylesheet that every section needs at once: inline it rather than
     // block first paint on a separate request.
