@@ -65,6 +65,29 @@ export function initSections(root: HTMLElement) {
     if (color) field?.setColor(color);
   });
 
+  // The canvas ignores pointer events so the copy above it stays clickable, so the pointer is tracked
+  // on the window instead. Only the primary pointer counts, so a second finger doesn't fight the first.
+  // Coalesced events are skipped: the field only needs the latest position each frame.
+  window.addEventListener(
+    'pointermove',
+    (e) => {
+      if (e.isPrimary) field?.setPointer(e.clientX, e.clientY);
+    },
+    { passive: true },
+  );
+  // Leaving the viewport, a cancelled touch or the tab being hidden all count as the pointer going away.
+  // (window 'blur' would too, but it also fires when focus moves into an iframe such as the contact
+  // form's captcha, which would snap the particles back under a pointer that's still there.)
+  document.addEventListener('pointerout', (e) => {
+    if (e.isPrimary && !e.relatedTarget) field?.clearPointer();
+  });
+  window.addEventListener('pointercancel', (e) => {
+    if (e.isPrimary) field?.clearPointer();
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) field?.clearPointer();
+  });
+
   const setSection = (i: number) => {
     if (i === section) return;
     section = i;
