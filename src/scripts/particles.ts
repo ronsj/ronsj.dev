@@ -25,6 +25,29 @@ interface Weights {
 const ORBITS_ROLL = -0.42;
 /** How long a morph from one section's shape to another takes. */
 const MORPH_MS = 1400;
+/**
+ * Cursor interaction. Particles near the pointer are pushed straight away from it, then spring back
+ * once it's gone. All in screen pixels and seconds.
+ */
+const POINTER = {
+  /** Radius of the pointer's influence, as a multiple of the field's scale (one shape unit in px). */
+  radius: 0.45,
+  minRadius: 60,
+  maxRadius: 150,
+  /** Push on a particle right under a resting pointer (px/s²); it tails off to zero at the radius. */
+  push: 2600,
+  /** Extra push per px/s of pointer speed, so a quick sweep flings particles further than a slow pass. */
+  speedGain: 7,
+  /** Fastest pointer speed the push responds to (px/s); anything faster counts the same. */
+  maxSpeed: 2400,
+  /** How much of the pointer's own velocity particles pick up as it passes through them (per second). */
+  drag: 2.2,
+  /** Spring stiffness pulling each particle back to its spot (1/s²), and the damping on that spring (1/s). */
+  stiffness: 40,
+  damping: 4.5,
+  /** Offsets and velocities below this (px, px/s) count as at rest, so the simulation can sleep. */
+  rest: 0.05,
+};
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 const smoothstep = (t: number) => t * t * (3 - 2 * t);
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -58,6 +81,31 @@ export class ParticleField {
   private readonly px: Float32Array;
   private readonly py: Float32Array;
   private readonly pf: Float32Array;
+  /** Screen-space displacement of each particle from where the shape puts it, and its velocity. */
+  private readonly ox: Float32Array;
+  private readonly oy: Float32Array;
+  private readonly vx: Float32Array;
+  private readonly vy: Float32Array;
+  /** Whether the pointer is over the page, and where (canvas px). */
+  private hasPointer = false;
+  private pointerX = 0;
+  private pointerY = 0;
+  /** Where the pointer was on the previous frame, for working out its speed; NaN until there is one. */
+  private prevX = NaN;
+  private prevY = NaN;
+  /** Smoothed pointer velocity (px/s), capped at POINTER.maxSpeed. */
+  private pvx = 0;
+  private pvy = 0;
+  /** The canvas's viewport offset; it's position: fixed, so this only changes on resize. */
+  private left = 0;
+  private top = 0;
+  /**
+   * True while nothing is displaced and the pointer is away or out of reach of every particle, so the
+   * physics can be skipped. The pointer moving wakes it, as does the spin carrying a particle into reach.
+   */
+  private settled = true;
+  private lastFrame = 0;
+  private frame = 0;
   private w = 0;
   private h = 0;
   private dpr = 1;
@@ -86,6 +134,10 @@ export class ParticleField {
     this.px = new Float32Array(this.n);
     this.py = new Float32Array(this.n);
     this.pf = new Float32Array(this.n);
+    this.ox = new Float32Array(this.n);
+    this.oy = new Float32Array(this.n);
+    this.vx = new Float32Array(this.n);
+    this.vy = new Float32Array(this.n);
     this.resize();
   }
 
@@ -126,8 +178,31 @@ export class ParticleField {
     this.drawOnce();
   }
 
+  /**
+   * Tell the field where the pointer is, in viewport coordinates. Particles near it are pushed out of
+   * the way, harder the faster it's moving, and drift back with a little bounce once it's gone.
+   */
+  setPointer(clientX: number, clientY: number) {
+    if (this.reduced) return;
+    this.hasPointer = true;
+    this.pointerX = clientX - this.left;
+    this.pointerY = clientY - this.top;
+    this.settled = false;
+  }
+
+  /** The pointer has left the page; the particles spring back to their places. */
+  clearPointer() {
+    this.hasPointer = false;
+    this.prevX = this.prevY = NaN;
+    this.pvx = this.pvy = 0;
+    this.settled = false;
+  }
+
   resize() {
     this.dpr = Math.min(2, window.devicePixelRatio || 1);
+    const r = this.canvas.getBoundingClientRect();
+    this.left = r.left;
+    this.top = r.top;
     this.w = this.canvas.clientWidth;
     this.h = this.canvas.clientHeight;
     this.canvas.width = Math.round(this.w * this.dpr);
@@ -171,6 +246,110 @@ export class ParticleField {
   private morphT(now: number) {
     if (this.reduced) return 1;
     return smoothstep(clamp01((now - this.morphAt) / MORPH_MS));
+  }
+
+  /**
+   * One step of the pointer physics: push the particles within reach of the pointer away from it, then
+   * let every displaced particle spring back toward its spot. Runs on the projected screen positions, so
+   * the displacement rides along with the shape's spin.
+   */
+  private nudge(dt: number, scale: number) {
+    const { n, px, py, ox, oy, vx, vy, hasPointer, pointerX: cx, pointerY: cy } = this;
+    const P = POINTER;
+    let speed = 0;
+    if (hasPointer) {
+      // Pointer velocity, smoothed so a single jittery event doesn't spike the push, and capped so a
+      // stalled frame (or a stale previous position) can't fling the particles off the page.
+      const hasPrev = !Number.isNaN(this.prevX);
+      const ivx = hasPrev && dt > 0 ? (cx - this.prevX) / dt : 0;
+      const ivy = hasPrev && dt > 0 ? (cy - this.prevY) / dt : 0;
+      const k = Math.min(1, dt * 25);
+      this.pvx += (ivx - this.pvx) * k;
+      this.pvy += (ivy - this.pvy) * k;
+      speed = Math.hypot(this.pvx, this.pvy);
+      if (speed > P.maxSpeed) {
+        this.pvx *= P.maxSpeed / speed;
+        this.pvy *= P.maxSpeed / speed;
+        speed = P.maxSpeed;
+      }
+      this.prevX = cx;
+      this.prevY = cy;
+    }
+    const R = this.reach(scale);
+    const R2 = R * R;
+    const push = (P.push + P.speedGain * speed) * dt;
+    const dragX = this.pvx * P.drag * dt;
+    const dragY = this.pvy * P.drag * dt;
+    const spring = P.stiffness * dt;
+    const damp = Math.max(0, 1 - P.damping * dt);
+
+    /** Whether any particle is displaced or still moving. */
+    let awake = false;
+    /** Whether any particle is within the pointer's reach. */
+    let touched = false;
+    for (let i = 0; i < n; i++) {
+      let sx = ox[i]!;
+      let sy = oy[i]!;
+      let ux = vx[i]!;
+      let uy = vy[i]!;
+      if (hasPointer) {
+        const dx = px[i]! + sx - cx;
+        const dy = py[i]! + sy - cy;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < R2) {
+          touched = true;
+          const d = Math.sqrt(d2) || 1e-3;
+          // Strongest right under the pointer, fading smoothly to nothing at the edge of its reach.
+          let g = 1 - d / R;
+          g *= g;
+          ux += (dx / d) * push * g + dragX * g;
+          uy += (dy / d) * push * g + dragY * g;
+        }
+      }
+      // Spring back to rest; damping is applied after the step so a full displacement can't blow up.
+      ux = (ux - sx * spring) * damp;
+      uy = (uy - sy * spring) * damp;
+      sx += ux * dt;
+      sy += uy * dt;
+      ox[i] = sx;
+      oy[i] = sy;
+      vx[i] = ux;
+      vy[i] = uy;
+      px[i] = px[i]! + sx;
+      py[i] = py[i]! + sy;
+      if (
+        !awake &&
+        (Math.abs(sx) > P.rest ||
+          Math.abs(sy) > P.rest ||
+          Math.abs(ux) > P.rest ||
+          Math.abs(uy) > P.rest)
+      )
+        awake = true;
+    }
+    if (!touched && !awake) {
+      ox.fill(0);
+      oy.fill(0);
+      vx.fill(0);
+      vy.fill(0);
+      this.settled = true;
+    }
+  }
+
+  /** Radius of the pointer's influence in px, for the current size of the shape. */
+  private reach(scale: number) {
+    return Math.max(POINTER.minRadius, Math.min(POINTER.maxRadius, scale * POINTER.radius));
+  }
+
+  /** Whether a resting pointer has any particle within reach (the spin can carry one into it). */
+  private inReach(scale: number) {
+    const { n, px, py, pointerX: cx, pointerY: cy } = this;
+    const R2 = this.reach(scale) ** 2;
+    for (let i = 0; i < n; i++) {
+      const dx = px[i]! - cx;
+      const dy = py[i]! - cy;
+      if (dx * dx + dy * dy < R2) return true;
+    }
+    return false;
   }
 
   private draw(now: number) {
@@ -238,6 +417,14 @@ export class ParticleField {
       py[i] = cys - y2 * f * scale;
       pf[i] = f;
     }
+
+    const dt = Math.min(0.05, Math.max(0, (now - this.lastFrame) / 1000));
+    this.lastFrame = now;
+    // A pointer parked out of reach lets the physics sleep; check now and then whether the spin has
+    // brought a particle to it, since no pointer event will.
+    if (this.settled && this.hasPointer && ++this.frame % 12 === 0 && this.inReach(scale))
+      this.settled = false;
+    if (!this.settled) this.nudge(dt, scale);
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
